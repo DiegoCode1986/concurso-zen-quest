@@ -17,7 +17,7 @@ All colors MUST be HSL.
     --popover: 255 255 255;
     --popover-foreground: 17 24 39;
 
-    --primary: 67 56 202;
+    --primary: 25 89% 57%;
     --primary-foreground: 255 255 255;
 
     --secondary: 241 245 249;
@@ -34,27 +34,27 @@ All colors MUST be HSL.
 
     --border: 226 232 240;
     --input: 226 232 240;
-    --ring: 67 56 202;
+    --ring: 25 89% 57%;
 
     --radius: 0.75rem;
 
-    /* Subject card colors */
-    --subject-orange: 251 146 60;
-    --subject-orange-light: 254 215 170;
-    --subject-blue: 59 130 246;
-    --subject-blue-light: 147 197 253;
-    --subject-green: 34 197 94;
-    --subject-green-light: 134 239 172;
-    --subject-red: 239 68 68;
-    --subject-red-light: 252 165 165;
-    --subject-purple: 147 51 234;
-    --subject-purple-light: 196 181 253;
-    --subject-teal: 20 184 166;
-    --subject-teal-light: 153 246 228;
-    --subject-pink: 236 72 153;
-    --subject-pink-light: 251 182 206;
-    --subject-indigo: 99 102 241;
-    --subject-indigo-light: 165 180 252;
+    /* Subject card colors - Custom palette */
+    --subject-blue: 194 67% 67%;        /* #69d2e7 */
+    --subject-blue-light: 194 67% 80%;
+    --subject-teal: 175 33% 75%;        /* #a7dbd8 */
+    --subject-teal-light: 175 33% 85%;
+    --subject-green: 75 33% 85%;        /* #e0e4cc */
+    --subject-green-light: 75 33% 90%;
+    --subject-orange: 25 89% 57%;       /* #f38630 */
+    --subject-orange-light: 25 89% 70%;
+    --subject-red: 25 100% 49%;         /* #fa6900 */
+    --subject-red-light: 25 100% 65%;
+    --subject-purple: 194 67% 60%;
+    --subject-purple-light: 194 67% 75%;
+    --subject-pink: 175 40% 70%;
+    --subject-pink-light: 175 40% 80%;
+    --subject-indigo: 75 40% 80%;
+    --subject-indigo-light: 75 40% 88%;
 
     /* Gradients */
     --gradient-orange: linear-gradient(135deg, hsl(var(--subject-orange)), hsl(var(--subject-orange-light)));
