@@ -36,6 +36,8 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [answeredQuestions, setAnsweredQuestions] = useState<Record<string, string | boolean>>({});
+  const [showResults, setShowResults] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
 
   const fetchQuestions = async () => {
@@ -234,53 +236,92 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
                 <CardContent>
                   {question.type === 'multiple_choice' && question.options ? (
                     <div className="space-y-2">
-                      {question.options.map((option, index) => (
-                        <div 
-                          key={index}
-                          className={`p-3 rounded-lg border transition-colors ${
-                            option === question.correct_answer
-                              ? 'bg-subject-green/10 border-subject-green text-subject-green'
-                              : 'bg-muted/50 border-border'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            {option === question.correct_answer && (
-                              <CheckCircle className="w-4 h-4 text-subject-green" />
-                            )}
-                            <span className="font-medium text-sm">
-                              {String.fromCharCode(65 + index)})
-                            </span>
-                            <span className="text-sm">{option}</span>
-                          </div>
-                        </div>
-                      ))}
+                      {question.options.map((option, index) => {
+                        const isAnswered = answeredQuestions[question.id] !== undefined;
+                        const isSelected = answeredQuestions[question.id] === option;
+                        const isCorrect = option === question.correct_answer;
+                        const showAnswer = showResults[question.id];
+                        
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => {
+                              if (!isAnswered) {
+                                setAnsweredQuestions(prev => ({ ...prev, [question.id]: option }));
+                                setShowResults(prev => ({ ...prev, [question.id]: true }));
+                              }
+                            }}
+                            disabled={isAnswered}
+                            className={`w-full p-3 rounded-lg border transition-colors text-left ${
+                              showAnswer && isCorrect
+                                ? 'bg-subject-green/10 border-subject-green text-subject-green'
+                                : showAnswer && isSelected && !isCorrect
+                                ? 'bg-destructive/10 border-destructive text-destructive'
+                                : isSelected && !showAnswer
+                                ? 'bg-primary/10 border-primary text-primary'
+                                : 'bg-muted/50 border-border hover:bg-muted/70'
+                            } ${!isAnswered ? 'cursor-pointer' : 'cursor-default'}`}
+                          >
+                            <div className="flex items-center gap-2">
+                              {showAnswer && isCorrect && (
+                                <CheckCircle className="w-4 h-4 text-subject-green" />
+                              )}
+                              {showAnswer && isSelected && !isCorrect && (
+                                <XCircle className="w-4 h-4 text-destructive" />
+                              )}
+                              <span className="font-medium text-sm">
+                                {String.fromCharCode(65 + index)})
+                              </span>
+                              <span className="text-sm">{option}</span>
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="flex items-center gap-4">
-                      <div className={`flex items-center gap-2 p-3 rounded-lg ${
-                        question.correct_boolean === true
-                          ? 'bg-subject-green/10 border border-subject-green text-subject-green'
-                          : 'bg-muted/50'
-                      }`}>
-                        {question.correct_boolean === true && (
-                          <CheckCircle className="w-4 h-4" />
-                        )}
-                        <span className="text-sm font-medium">Verdadeiro</span>
-                      </div>
-                      <div className={`flex items-center gap-2 p-3 rounded-lg ${
-                        question.correct_boolean === false
-                          ? 'bg-subject-green/10 border border-subject-green text-subject-green'
-                          : 'bg-muted/50'
-                      }`}>
-                        {question.correct_boolean === false && (
-                          <CheckCircle className="w-4 h-4" />
-                        )}
-                        <span className="text-sm font-medium">Falso</span>
-                      </div>
+                      {[true, false].map((value) => {
+                        const isAnswered = answeredQuestions[question.id] !== undefined;
+                        const isSelected = answeredQuestions[question.id] === value;
+                        const isCorrect = question.correct_boolean === value;
+                        const showAnswer = showResults[question.id];
+                        
+                        return (
+                          <button
+                            key={value.toString()}
+                            onClick={() => {
+                              if (!isAnswered) {
+                                setAnsweredQuestions(prev => ({ ...prev, [question.id]: value }));
+                                setShowResults(prev => ({ ...prev, [question.id]: true }));
+                              }
+                            }}
+                            disabled={isAnswered}
+                            className={`flex items-center gap-2 p-3 rounded-lg transition-colors ${
+                              showAnswer && isCorrect
+                                ? 'bg-subject-green/10 border border-subject-green text-subject-green'
+                                : showAnswer && isSelected && !isCorrect
+                                ? 'bg-destructive/10 border border-destructive text-destructive'
+                                : isSelected && !showAnswer
+                                ? 'bg-primary/10 border border-primary text-primary'
+                                : 'bg-muted/50 hover:bg-muted/70'
+                            } ${!isAnswered ? 'cursor-pointer' : 'cursor-default'}`}
+                          >
+                            {showAnswer && isCorrect && (
+                              <CheckCircle className="w-4 h-4" />
+                            )}
+                            {showAnswer && isSelected && !isCorrect && (
+                              <XCircle className="w-4 h-4" />
+                            )}
+                            <span className="text-sm font-medium">
+                              {value ? 'Verdadeiro' : 'Falso'}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                   
-                  {question.explanation && (
+                  {question.explanation && showResults[question.id] && (
                     <div className="mt-4 p-4 bg-muted/50 rounded-lg">
                       <h4 className="text-sm font-medium text-foreground mb-2">Explicação:</h4>
                       <p className="text-sm text-muted-foreground">{question.explanation}</p>
