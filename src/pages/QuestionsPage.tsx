@@ -4,8 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Search, Plus, MoreVertical, Pencil, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, Search, Plus, MoreVertical, Pencil, Trash2, CheckCircle, XCircle, RotateCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,6 +46,8 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [answeredQuestions, setAnsweredQuestions] = useState<Record<string, string | boolean>>({});
   const [showResults, setShowResults] = useState<Record<string, boolean>>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const questionsPerPage = 5;
   const { toast } = useToast();
 
   const fetchQuestions = async () => {
@@ -91,6 +101,24 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
   const filteredQuestions = questions.filter(question =>
     question.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const totalPages = Math.ceil(filteredQuestions.length / questionsPerPage);
+  const startIndex = (currentPage - 1) * questionsPerPage;
+  const endIndex = startIndex + questionsPerPage;
+  const currentQuestions = filteredQuestions.slice(startIndex, endIndex);
+
+  const handleTryAgain = (questionId: string) => {
+    setAnsweredQuestions(prev => {
+      const newState = { ...prev };
+      delete newState[questionId];
+      return newState;
+    });
+    setShowResults(prev => {
+      const newState = { ...prev };
+      delete newState[questionId];
+      return newState;
+    });
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
@@ -184,8 +212,9 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
             </div>
           </div>
         ) : (
-          <div className="space-y-4">
-            {filteredQuestions.map((question) => (
+          <>
+            <div className="space-y-4">
+              {currentQuestions.map((question) => (
               <Card key={question.id} className="shadow-card hover:shadow-card-hover transition-all duration-300">
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -327,10 +356,71 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
                       <p className="text-sm text-muted-foreground">{question.explanation}</p>
                     </div>
                   )}
+                  
+                  {showResults[question.id] && (
+                    <div className="mt-4 flex justify-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleTryAgain(question.id)}
+                        className="flex items-center gap-2"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                        Tentar novamente
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-8 flex justify-center">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage > 1) setCurrentPage(currentPage - 1);
+                        }}
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                      />
+                    </PaginationItem>
+                    
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setCurrentPage(page);
+                          }}
+                          isActive={currentPage === page}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                        }}
+                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
+          </>
         )}
       </main>
 
