@@ -140,20 +140,20 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-accent/10">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onBack}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1 sm:gap-2 shrink-0"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Voltar
+                <span className="hidden xs:inline">Voltar</span>
               </Button>
-              <div>
-                <h1 className="text-xl font-bold text-foreground">{folderName}</h1>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">{folderName}</h1>
                 <p className="text-xs text-muted-foreground">
                   {questions.length} {questions.length === 1 ? 'questão' : 'questões'}
                 </p>
@@ -164,14 +164,14 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Study Timer */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <StudyTimer folderName={folderName} />
         </div>
         
         {/* Top Actions */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
@@ -185,10 +185,10 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
             onClick={() => setIsCreateDialogOpen(true)}
             variant="gradient"
             size="lg"
-            className="h-12 px-6"
+            className="h-11 sm:h-12 px-4 sm:px-6"
           >
-            <Plus className="w-5 h-5 mr-2" />
-            Nova Questão
+            <Plus className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
+            <span className="text-sm sm:text-base">Nova Questão</span>
           </Button>
         </div>
 

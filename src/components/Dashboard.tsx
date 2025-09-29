@@ -118,15 +118,15 @@ export const Dashboard = ({ user, onSignOut, onFolderClick }: DashboardProps) =>
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-accent/10">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-br from-primary to-primary/80 p-2 rounded-lg shadow-card">
-                <BookOpen className="w-6 h-6 text-primary-foreground" />
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              <div className="bg-gradient-to-br from-primary to-primary/80 p-1.5 sm:p-2 rounded-lg shadow-card shrink-0">
+                <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-foreground">Questões Zen</h1>
-                <p className="text-xs text-muted-foreground">Suas matérias de estudo</p>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl font-bold text-foreground">Questões Zen</h1>
+                <p className="text-xs text-muted-foreground hidden sm:block">Suas matérias de estudo</p>
               </div>
             </div>
 
@@ -152,9 +152,9 @@ export const Dashboard = ({ user, onSignOut, onFolderClick }: DashboardProps) =>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Top Actions */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
@@ -168,10 +168,10 @@ export const Dashboard = ({ user, onSignOut, onFolderClick }: DashboardProps) =>
             onClick={() => setIsCreateDialogOpen(true)}
             variant="gradient"
             size="lg"
-            className="h-12 px-6"
+            className="h-11 sm:h-12 px-4 sm:px-6"
           >
-            <Plus className="w-5 h-5 mr-2" />
-            Nova Matéria
+            <Plus className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
+            <span className="text-sm sm:text-base">Nova Matéria</span>
           </Button>
         </div>
 
@@ -201,7 +201,7 @@ export const Dashboard = ({ user, onSignOut, onFolderClick }: DashboardProps) =>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {filteredFolders.map((folder, index) => (
               <SubjectCard
                 key={folder.id}

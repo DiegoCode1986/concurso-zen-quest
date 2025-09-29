@@ -108,16 +108,70 @@ export const StudyTimer = ({ folderName }: StudyTimerProps) => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg p-4 border border-border/50">
+    <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg p-3 sm:p-4 border border-border/50">
       {/* Progress bar */}
-      <div className="w-full bg-muted/30 rounded-full h-1 mb-4">
+      <div className="w-full bg-muted/30 rounded-full h-1 mb-3 sm:mb-4">
         <div 
           className="bg-gradient-to-r from-primary to-accent h-1 rounded-full transition-all duration-300"
           style={{ width: `${getProgress()}%` }}
         />
       </div>
 
-      <div className="flex items-center justify-between">
+      {/* Mobile Layout */}
+      <div className="block sm:hidden space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-primary" />
+            <span className="text-xs font-medium text-foreground">Cronômetro</span>
+          </div>
+          <Badge variant="outline" className="text-xs max-w-[120px] truncate">
+            {folderName}
+          </Badge>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <div className={`text-xl font-mono font-bold ${getTimerColor()}`}>
+            {formatTime(remainingSeconds)}
+          </div>
+          
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsConfiguring(!isConfiguring)}
+              className="h-8 w-8 p-0"
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleToggle}
+              className="h-8 w-8 p-0"
+              disabled={remainingSeconds === 0 && !isRunning}
+            >
+              {isRunning ? (
+                <Pause className="w-4 h-4" />
+              ) : (
+                <Play className="w-4 h-4" />
+              )}
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleReset}
+              className="h-8 w-8 p-0"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Layout */}
+      <div className="hidden sm:flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <Clock className="w-5 h-5 text-primary" />
@@ -171,41 +225,45 @@ export const StudyTimer = ({ folderName }: StudyTimerProps) => {
 
       {/* Configuration Panel */}
       {isConfiguring && (
-        <div className="mt-4 pt-4 border-t border-border/50">
+        <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border/50">
           <div className="flex flex-col gap-3">
             {/* Quick preset buttons */}
-            <div className="flex flex-wrap gap-2">
-              <span className="text-sm text-muted-foreground">Tempos rápidos:</span>
-              {[15, 25, 30, 45, 60, 90].map((minutes) => (
-                <Button
-                  key={minutes}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPresetTime(minutes)}
-                  className="h-7 px-3 text-xs"
-                >
-                  {minutes}min
-                </Button>
-              ))}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">Tempos rápidos:</span>
+              <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-1 sm:gap-2">
+                {[15, 25, 30, 45, 60, 90].map((minutes) => (
+                  <Button
+                    key={minutes}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPresetTime(minutes)}
+                    className="h-7 px-2 sm:px-3 text-xs"
+                  >
+                    {minutes}min
+                  </Button>
+                ))}
+              </div>
             </div>
             
             {/* Custom time input */}
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                min="1"
-                max="180"
-                value={inputMinutes}
-                onChange={(e) => setInputMinutes(Number(e.target.value))}
-                className="w-20 h-8"
-                placeholder="Min"
-              />
-              <span className="text-sm text-muted-foreground">minutos</span>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  min="1"
+                  max="180"
+                  value={inputMinutes}
+                  onChange={(e) => setInputMinutes(Number(e.target.value))}
+                  className="w-20 h-8"
+                  placeholder="Min"
+                />
+                <span className="text-xs sm:text-sm text-muted-foreground">minutos</span>
+              </div>
               <Button
                 variant="default"
                 size="sm"
                 onClick={handleSetTime}
-                className="h-8 px-3"
+                className="h-8 px-3 w-full sm:w-auto"
               >
                 Definir
               </Button>
