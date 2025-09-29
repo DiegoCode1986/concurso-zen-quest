@@ -1,21 +1,38 @@
 import { useState, useEffect, useRef } from 'react';
-import { Clock, Play, Pause, RotateCcw } from 'lucide-react';
+import { Clock, Play, Pause, RotateCcw, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
 
 interface StudyTimerProps {
   folderName: string;
 }
 
 export const StudyTimer = ({ folderName }: StudyTimerProps) => {
-  const [seconds, setSeconds] = useState(0);
-  const [isRunning, setIsRunning] = useState(true);
+  const [totalSeconds, setTotalSeconds] = useState(1500); // 25 min default (Pomodoro)
+  const [remainingSeconds, setRemainingSeconds] = useState(1500);
+  const [isRunning, setIsRunning] = useState(false);
+  const [isConfiguring, setIsConfiguring] = useState(false);
+  const [inputMinutes, setInputMinutes] = useState(25);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
-    if (isRunning) {
+    if (isRunning && remainingSeconds > 0) {
       intervalRef.current = setInterval(() => {
-        setSeconds(prev => prev + 1);
+        setRemainingSeconds(prev => {
+          if (prev <= 1) {
+            setIsRunning(false);
+            // Timer finished notification
+            toast({
+              title: 'Tempo de estudo concluído!',
+              description: `Você estudou ${folderName} por ${formatTime(totalSeconds)}. Parabéns!`,
+            });
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
     } else {
       if (intervalRef.current) {
@@ -28,23 +45,7 @@ export const StudyTimer = ({ folderName }: StudyTimerProps) => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning]);
-
-  // Pause when tab is not visible
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        setIsRunning(false);
-      } else {
-        setIsRunning(true);
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, []);
+  }, [isRunning, remainingSeconds, folderName, totalSeconds, toast]);
 
   const formatTime = (totalSeconds: number) => {
     const hours = Math.floor(totalSeconds / 3600);
@@ -58,28 +59,69 @@ export const StudyTimer = ({ folderName }: StudyTimerProps) => {
   };
 
   const handleToggle = () => {
+    if (remainingSeconds === 0) {
+      // If timer finished, reset first
+      handleReset();
+    }
     setIsRunning(!isRunning);
   };
 
   const handleReset = () => {
-    setSeconds(0);
-    setIsRunning(true);
+    setRemainingSeconds(totalSeconds);
+    setIsRunning(false);
+  };
+
+  const handleSetTime = () => {
+    const newSeconds = inputMinutes * 60;
+    setTotalSeconds(newSeconds);
+    setRemainingSeconds(newSeconds);
+    setIsRunning(false);
+    setIsConfiguring(false);
+    toast({
+      title: 'Tempo configurado',
+      description: `Timer ajustado para ${inputMinutes} minutos`,
+    });
+  };
+
+  const setPresetTime = (minutes: number) => {
+    const newSeconds = minutes * 60;
+    setTotalSeconds(newSeconds);
+    setRemainingSeconds(newSeconds);
+    setInputMinutes(minutes);
+    setIsRunning(false);
+    toast({
+      title: 'Tempo configurado',
+      description: `Timer ajustado para ${minutes} minutos`,
+    });
   };
 
   const getTimerColor = () => {
-    if (seconds < 300) return 'text-muted-foreground'; // < 5 min
-    if (seconds < 1800) return 'text-primary'; // < 30 min
-    if (seconds < 3600) return 'text-subject-green'; // < 1 hour
-    return 'text-accent'; // > 1 hour
+    const percentage = remainingSeconds / totalSeconds;
+    if (percentage > 0.5) return 'text-subject-green';
+    if (percentage > 0.25) return 'text-primary';
+    if (percentage > 0.1) return 'text-orange-500';
+    return 'text-destructive';
+  };
+
+  const getProgress = () => {
+    return ((totalSeconds - remainingSeconds) / totalSeconds) * 100;
   };
 
   return (
     <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg p-4 border border-border/50">
+      {/* Progress bar */}
+      <div className="w-full bg-muted/30 rounded-full h-1 mb-4">
+        <div 
+          className="bg-gradient-to-r from-primary to-accent h-1 rounded-full transition-all duration-300"
+          style={{ width: `${getProgress()}%` }}
+        />
+      </div>
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <Clock className="w-5 h-5 text-primary" />
-            <span className="text-sm font-medium text-foreground">Tempo de Estudo</span>
+            <span className="text-sm font-medium text-foreground">Cronômetro de Estudo</span>
           </div>
           <Badge variant="outline" className="text-xs">
             {folderName}
@@ -88,15 +130,25 @@ export const StudyTimer = ({ folderName }: StudyTimerProps) => {
         
         <div className="flex items-center gap-3">
           <div className={`text-2xl font-mono font-bold ${getTimerColor()}`}>
-            {formatTime(seconds)}
+            {formatTime(remainingSeconds)}
           </div>
           
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => setIsConfiguring(!isConfiguring)}
+              className="h-8 w-8 p-0"
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleToggle}
               className="h-8 w-8 p-0"
+              disabled={remainingSeconds === 0 && !isRunning}
             >
               {isRunning ? (
                 <Pause className="w-4 h-4" />
@@ -116,6 +168,51 @@ export const StudyTimer = ({ folderName }: StudyTimerProps) => {
           </div>
         </div>
       </div>
+
+      {/* Configuration Panel */}
+      {isConfiguring && (
+        <div className="mt-4 pt-4 border-t border-border/50">
+          <div className="flex flex-col gap-3">
+            {/* Quick preset buttons */}
+            <div className="flex flex-wrap gap-2">
+              <span className="text-sm text-muted-foreground">Tempos rápidos:</span>
+              {[15, 25, 30, 45, 60, 90].map((minutes) => (
+                <Button
+                  key={minutes}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPresetTime(minutes)}
+                  className="h-7 px-3 text-xs"
+                >
+                  {minutes}min
+                </Button>
+              ))}
+            </div>
+            
+            {/* Custom time input */}
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                min="1"
+                max="180"
+                value={inputMinutes}
+                onChange={(e) => setInputMinutes(Number(e.target.value))}
+                className="w-20 h-8"
+                placeholder="Min"
+              />
+              <span className="text-sm text-muted-foreground">minutos</span>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleSetTime}
+                className="h-8 px-3"
+              >
+                Definir
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
