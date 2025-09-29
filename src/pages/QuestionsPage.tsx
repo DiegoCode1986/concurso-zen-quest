@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { CreateQuestionDialog } from '@/components/CreateQuestionDialog';
+import { StudyTimer } from '@/components/StudyTimer';
 
 interface Question {
   id: string;
@@ -164,6 +165,11 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Study Timer */}
+        <div className="mb-6">
+          <StudyTimer folderName={folderName} />
+        </div>
+        
         {/* Top Actions */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <div className="relative flex-1">
