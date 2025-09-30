@@ -3,9 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { AuthPage } from '@/components/AuthPage';
 import { Dashboard } from '@/components/Dashboard';
 import { QuestionsPage } from '@/pages/QuestionsPage';
+import { RandomStudyPage } from '@/pages/RandomStudyPage';
+import { FlashcardsPage } from '@/pages/FlashcardsPage';
+import { Sidebar } from '@/components/Sidebar';
 import type { User, Session } from '@supabase/supabase-js';
 
-type ViewState = 'dashboard' | 'questions';
+type ViewState = 'dashboard' | 'questions' | 'random-study' | 'flashcards';
 
 interface AppState {
   view: ViewState;
@@ -62,6 +65,10 @@ const Index = () => {
     setAppState({ view: 'dashboard' });
   };
 
+  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards') => {
+    setAppState({ view });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -77,22 +84,36 @@ const Index = () => {
     return <AuthPage onAuthSuccess={handleAuthSuccess} />;
   }
 
-  if (appState.view === 'questions' && appState.selectedFolderId && appState.selectedFolderName) {
-    return (
-      <QuestionsPage
-        folderId={appState.selectedFolderId}
-        folderName={appState.selectedFolderName}
-        onBack={handleBackToDashboard}
-      />
-    );
-  }
-
   return (
-    <Dashboard
-      user={user}
-      onSignOut={handleSignOut}
-      onFolderClick={handleFolderClick}
-    />
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar 
+        currentView={appState.view === 'questions' ? 'dashboard' : appState.view}
+        onNavigate={handleNavigate}
+      />
+      
+      <div className="flex-1 overflow-auto lg:ml-64">
+        {appState.view === 'questions' && appState.selectedFolderId && appState.selectedFolderName ? (
+          <QuestionsPage
+            folderId={appState.selectedFolderId}
+            folderName={appState.selectedFolderName}
+            onBack={handleBackToDashboard}
+          />
+        ) : appState.view === 'random-study' ? (
+          <RandomStudyPage />
+        ) : appState.view === 'flashcards' ? (
+          <FlashcardsPage />
+        ) : (
+          <Dashboard
+            user={user}
+            onSignOut={handleSignOut}
+            onFolderClick={handleFolderClick}
+            onRandomStudy={() => handleNavigate('random-study')}
+            onNavigate={handleNavigate}
+            currentView={appState.view === 'questions' ? 'dashboard' : appState.view}
+          />
+        )}
+      </div>
+    </div>
   );
 };
 

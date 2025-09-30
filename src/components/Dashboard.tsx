@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, User, LogOut, BookOpen } from 'lucide-react';
+import { Search, Plus, User, LogOut, BookOpen, Shuffle } from 'lucide-react';
 import { SubjectCard } from './SubjectCard';
 import { CreateFolderDialog } from './CreateFolderDialog';
+import { MobileNav } from './MobileNav';
 import { useToast } from '@/hooks/use-toast';
 import {
   DropdownMenu,
@@ -26,11 +27,14 @@ interface DashboardProps {
   user: any;
   onSignOut: () => void;
   onFolderClick: (folderId: string, folderName: string) => void;
+  onRandomStudy?: () => void;
+  onNavigate?: (view: 'dashboard' | 'random-study' | 'flashcards') => void;
+  currentView?: 'dashboard' | 'random-study' | 'flashcards';
 }
 
 const colorVariants = ['orange', 'blue', 'green', 'red', 'purple', 'teal', 'pink', 'indigo'] as const;
 
-export const Dashboard = ({ user, onSignOut, onFolderClick }: DashboardProps) => {
+export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNavigate, currentView = 'dashboard' }: DashboardProps) => {
   const [folders, setFolders] = useState<Folder[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -117,10 +121,11 @@ export const Dashboard = ({ user, onSignOut, onFolderClick }: DashboardProps) =>
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-accent/10">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50">
+      <header className="bg-card/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              {onNavigate && <MobileNav currentView={currentView} onNavigate={onNavigate} />}
               <div className="bg-gradient-to-br from-primary to-primary/80 p-1.5 sm:p-2 rounded-lg shadow-card shrink-0">
                 <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
               </div>
@@ -153,26 +158,43 @@ export const Dashboard = ({ user, onSignOut, onFolderClick }: DashboardProps) =>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
+        {/* Page Title */}
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold text-foreground mb-2">Minhas Matérias</h2>
+          <p className="text-muted-foreground">Organize suas questões por matéria e estude de forma eficiente</p>
+        </div>
+
         {/* Top Actions */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              placeholder="Buscar matérias..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-12 bg-white/80 backdrop-blur-sm border-border/50 focus:bg-white transition-all duration-300"
-            />
+        <div className="flex flex-col gap-3 mb-6 sm:mb-8">
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                placeholder="Buscar matérias..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-12 bg-card/80 backdrop-blur-sm border-border/50 focus:bg-card transition-all duration-300"
+              />
+            </div>
+            <Button 
+              onClick={onRandomStudy}
+              variant="outline"
+              size="lg"
+              className="h-12 px-4 sm:px-6 shrink-0"
+            >
+              <Shuffle className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
+              <span className="hidden sm:inline text-sm sm:text-base">Estudo Aleatório</span>
+              <span className="sm:hidden text-sm">Aleatório</span>
+            </Button>
+            <Button 
+              onClick={() => setIsCreateDialogOpen(true)}
+              size="lg"
+              className="h-12 px-4 sm:px-6 bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
+            >
+              <Plus className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
+              <span className="text-sm sm:text-base">Nova Matéria</span>
+            </Button>
           </div>
-          <Button 
-            onClick={() => setIsCreateDialogOpen(true)}
-            variant="gradient"
-            size="lg"
-            className="h-11 sm:h-12 px-4 sm:px-6"
-          >
-            <Plus className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
-            <span className="text-sm sm:text-base">Nova Matéria</span>
-          </Button>
         </div>
 
         {/* Folders Grid */}
