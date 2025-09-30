@@ -95,7 +95,13 @@ export const RandomStudyPage = () => {
     });
   };
 
+  const handleTryAgain = () => {
+    setShowAnswer(false);
+    setSelectedAnswer(null);
+  };
+
   const checkAnswer = () => {
+    if (!selectedAnswer) return;
     setShowAnswer(true);
   };
 
@@ -105,6 +111,14 @@ export const RandomStudyPage = () => {
       return selectedAnswer === String(current.correct_boolean);
     }
     return selectedAnswer === current.correct_answer;
+  };
+
+  const getCorrectAnswerDisplay = () => {
+    const current = questions[currentIndex];
+    if (current.type === 'boolean') {
+      return current.correct_boolean ? 'Verdadeiro' : 'Falso';
+    }
+    return current.correct_answer;
   };
 
   if (loading) {
@@ -211,22 +225,40 @@ export const RandomStudyPage = () => {
 
         {/* Answer Feedback */}
         {showAnswer && (
-          <div className={`p-4 rounded-lg mb-4 ${isCorrect() ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-            <div className="flex items-start gap-3">
+          <div className={`p-6 rounded-lg mb-6 ${isCorrect() ? 'bg-green-50 border-2 border-green-200' : 'bg-red-50 border-2 border-red-200'}`}>
+            <div className="flex items-start gap-3 mb-4">
               {isCorrect() ? (
-                <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-6 h-6 text-green-600 shrink-0 mt-0.5" />
               ) : (
-                <XCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                <XCircle className="w-6 h-6 text-red-600 shrink-0 mt-0.5" />
               )}
-              <div>
-                <p className={`font-semibold mb-1 ${isCorrect() ? 'text-green-900' : 'text-red-900'}`}>
-                  {isCorrect() ? 'Correto!' : 'Incorreto'}
+              <div className="flex-1">
+                <p className={`font-semibold text-lg mb-2 ${isCorrect() ? 'text-green-900' : 'text-red-900'}`}>
+                  {isCorrect() ? 'Resposta Correta! 🎉' : 'Resposta Incorreta'}
                 </p>
+                {!isCorrect() && (
+                  <div className="mb-3">
+                    <p className="text-sm font-medium text-red-800 mb-1">Resposta correta:</p>
+                    <p className="text-base font-semibold text-red-900 bg-white/50 px-3 py-2 rounded">
+                      {getCorrectAnswerDisplay()}
+                    </p>
+                  </div>
+                )}
                 {currentQuestion.explanation && (
-                  <p className="text-sm text-muted-foreground">{currentQuestion.explanation}</p>
+                  <div className={`mt-3 ${isCorrect() ? 'text-green-800' : 'text-red-800'}`}>
+                    <p className="font-medium mb-1">Explicação:</p>
+                    <p className="text-sm bg-white/50 px-3 py-2 rounded">{currentQuestion.explanation}</p>
+                  </div>
                 )}
               </div>
             </div>
+            <Button 
+              onClick={handleTryAgain} 
+              variant="outline" 
+              className="w-full mt-2"
+            >
+              Tentar Novamente
+            </Button>
           </div>
         )}
 
