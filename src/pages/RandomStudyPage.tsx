@@ -100,9 +100,10 @@ export const RandomStudyPage = () => {
     setSelectedAnswer(null);
   };
 
-  const checkAnswer = () => {
-    if (!selectedAnswer) return;
-    setShowAnswer(true);
+  const handleSelect = (value: string) => {
+    if (showAnswer) return; // avoid changing after reveal
+    setSelectedAnswer(value);
+    setShowAnswer(true); // reveal immediately after click
   };
 
   const isCorrect = () => {
@@ -111,6 +112,12 @@ export const RandomStudyPage = () => {
       return selectedAnswer === String(current.correct_boolean);
     }
     return selectedAnswer === current.correct_answer;
+  };
+
+  const isOptionCorrect = (option: string) => {
+    const current = questions[currentIndex];
+    if (current.type === 'boolean') return option === String(current.correct_boolean);
+    return option === current.correct_answer;
   };
 
   const getCorrectAnswerDisplay = () => {
@@ -182,46 +189,85 @@ export const RandomStudyPage = () => {
           {currentQuestion.type === 'boolean' ? (
             <>
               <Button
-                onClick={() => setSelectedAnswer('true')}
-                variant={selectedAnswer === 'true' ? 'default' : 'outline'}
-                className="w-full justify-start text-left h-auto py-4"
+                onClick={() => handleSelect('true')}
+                variant="outline"
+                className={`w-full justify-start text-left h-auto py-4 ${
+                  showAnswer
+                    ? (isOptionCorrect('true')
+                        ? 'border-2 border-green-200 bg-green-50'
+                        : selectedAnswer === 'true'
+                          ? 'border-2 border-red-200 bg-red-50'
+                          : '')
+                    : (selectedAnswer === 'true' ? 'ring-2 ring-primary' : '')
+                }`}
                 disabled={showAnswer}
               >
                 <CheckCircle2 className="w-5 h-5 mr-3 shrink-0" />
                 Verdadeiro
+                {showAnswer && (
+                  isOptionCorrect('true') ? (
+                    <CheckCircle2 className="w-5 h-5 ml-auto text-green-600" />
+                  ) : selectedAnswer === 'true' ? (
+                    <XCircle className="w-5 h-5 ml-auto text-red-600" />
+                  ) : null
+                )}
               </Button>
               <Button
-                onClick={() => setSelectedAnswer('false')}
-                variant={selectedAnswer === 'false' ? 'default' : 'outline'}
-                className="w-full justify-start text-left h-auto py-4"
+                onClick={() => handleSelect('false')}
+                variant="outline"
+                className={`w-full justify-start text-left h-auto py-4 ${
+                  showAnswer
+                    ? (isOptionCorrect('false')
+                        ? 'border-2 border-green-200 bg-green-50'
+                        : selectedAnswer === 'false'
+                          ? 'border-2 border-red-200 bg-red-50'
+                          : '')
+                    : (selectedAnswer === 'false' ? 'ring-2 ring-primary' : '')
+                }`}
                 disabled={showAnswer}
               >
                 <XCircle className="w-5 h-5 mr-3 shrink-0" />
                 Falso
+                {showAnswer && (
+                  isOptionCorrect('false') ? (
+                    <CheckCircle2 className="w-5 h-5 ml-auto text-green-600" />
+                  ) : selectedAnswer === 'false' ? (
+                    <XCircle className="w-5 h-5 ml-auto text-red-600" />
+                  ) : null
+                )}
               </Button>
             </>
           ) : (
             currentQuestion.options?.map((option, idx) => (
               <Button
                 key={idx}
-                onClick={() => setSelectedAnswer(option)}
-                variant={selectedAnswer === option ? 'default' : 'outline'}
-                className="w-full justify-start text-left h-auto py-4"
+                onClick={() => handleSelect(option)}
+                variant="outline"
+                className={`w-full justify-start text-left h-auto py-4 ${
+                  showAnswer
+                    ? (isOptionCorrect(option)
+                        ? 'border-2 border-green-200 bg-green-50'
+                        : selectedAnswer === option
+                          ? 'border-2 border-red-200 bg-red-50'
+                          : '')
+                    : (selectedAnswer === option ? 'ring-2 ring-primary' : '')
+                }`}
                 disabled={showAnswer}
               >
                 <span className="font-semibold mr-3">{String.fromCharCode(65 + idx)}.</span>
                 {option}
+                {showAnswer && (
+                  isOptionCorrect(option) ? (
+                    <CheckCircle2 className="w-5 h-5 ml-auto text-green-600" />
+                  ) : selectedAnswer === option ? (
+                    <XCircle className="w-5 h-5 ml-auto text-red-600" />
+                  ) : null
+                )}
               </Button>
             ))
           )}
         </div>
 
-        {/* Check Answer Button */}
-        {!showAnswer && selectedAnswer && (
-          <Button onClick={checkAnswer} className="w-full mb-4">
-            Verificar Resposta
-          </Button>
-        )}
 
         {/* Answer Feedback */}
         {showAnswer && (
