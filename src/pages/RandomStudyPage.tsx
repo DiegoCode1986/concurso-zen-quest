@@ -108,7 +108,7 @@ export const RandomStudyPage = () => {
 
   const isCorrect = () => {
     const current = questions[currentIndex];
-    if (current.type === 'boolean') {
+    if (current.type === 'true_false') {
       return selectedAnswer === String(current.correct_boolean);
     }
     return selectedAnswer === current.correct_answer;
@@ -116,13 +116,13 @@ export const RandomStudyPage = () => {
 
   const isOptionCorrect = (option: string) => {
     const current = questions[currentIndex];
-    if (current.type === 'boolean') return option === String(current.correct_boolean);
+    if (current.type === 'true_false') return option === String(current.correct_boolean);
     return option === current.correct_answer;
   };
 
   const getCorrectAnswerDisplay = () => {
     const current = questions[currentIndex];
-    if (current.type === 'boolean') {
+    if (current.type === 'true_false') {
       return current.correct_boolean ? 'Verdadeiro' : 'Falso';
     }
     return current.correct_answer;
@@ -179,14 +179,14 @@ export const RandomStudyPage = () => {
       <Card className="flex-1 p-6 flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <Badge variant="secondary">{currentQuestion.folder_name}</Badge>
-          <Badge variant="outline">{currentQuestion.type === 'boolean' ? 'V/F' : 'Múltipla Escolha'}</Badge>
+          <Badge variant="outline">{currentQuestion.type === 'true_false' ? 'V/F' : 'Múltipla Escolha'}</Badge>
         </div>
 
         <h2 className="text-xl font-semibold mb-6">{currentQuestion.title}</h2>
 
         {/* Options */}
         <div className="space-y-3 mb-6">
-          {currentQuestion.type === 'boolean' ? (
+          {currentQuestion.type === 'true_false' ? (
             <>
               <Button
                 onClick={() => handleSelect('true')}
