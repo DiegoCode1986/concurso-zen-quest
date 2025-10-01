@@ -31,11 +31,19 @@ export const FlashcardsPage = () => {
 
   const fetchFlashcards = async () => {
     try {
-      // Por enquanto, vamos usar localStorage até criar a tabela no banco
-      const stored = localStorage.getItem('flashcards');
-      if (stored) {
-        setFlashcards(JSON.parse(stored));
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setLoading(false);
+        return;
       }
+
+      const { data, error } = await supabase
+        .from('flashcards')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      setFlashcards(data || []);
     } catch (error: any) {
       toast({
         title: 'Erro ao carregar flashcards',
@@ -47,12 +55,7 @@ export const FlashcardsPage = () => {
     }
   };
 
-  const saveFlashcards = (cards: Flashcard[]) => {
-    localStorage.setItem('flashcards', JSON.stringify(cards));
-    setFlashcards(cards);
-  };
-
-  const handleCreateFlashcard = () => {
+  const handleCreateFlashcard = async () => {
     if (!newCard.front.trim() || !newCard.back.trim()) {
       toast({
         title: 'Campos obrigatórios',
@@ -62,34 +65,75 @@ export const FlashcardsPage = () => {
       return;
     }
 
-    const flashcard: Flashcard = {
-      id: Date.now().toString(),
-      front: newCard.front,
-      back: newCard.back,
-      created_at: new Date().toISOString(),
-    };
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: 'Erro de autenticação',
+          description: 'Você precisa estar logado para criar flashcards.',
+          variant: 'destructive',
+        });
+        return;
+      }
 
-    const updated = [...flashcards, flashcard];
-    saveFlashcards(updated);
-    setNewCard({ front: '', back: '' });
-    setIsDialogOpen(false);
-    toast({
-      title: 'Flashcard criado!',
-      description: 'Seu novo flashcard foi adicionado.',
-    });
+      const { data, error } = await supabase
+        .from('flashcards')
+        .insert([
+          {
+            user_id: user.id,
+            front: newCard.front.trim(),
+            back: newCard.back.trim(),
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setFlashcards([...flashcards, data]);
+      setNewCard({ front: '', back: '' });
+      setIsDialogOpen(false);
+      toast({
+        title: 'Flashcard criado!',
+        description: 'Seu novo flashcard foi adicionado.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao criar flashcard',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
   };
 
-  const handleDeleteFlashcard = () => {
-    const updated = flashcards.filter((_, idx) => idx !== currentIndex);
-    saveFlashcards(updated);
-    if (currentIndex >= updated.length) {
-      setCurrentIndex(Math.max(0, updated.length - 1));
+  const handleDeleteFlashcard = async () => {
+    const cardToDelete = flashcards[currentIndex];
+    
+    try {
+      const { error } = await supabase
+        .from('flashcards')
+        .delete()
+        .eq('id', cardToDelete.id);
+
+      if (error) throw error;
+
+      const updated = flashcards.filter((_, idx) => idx !== currentIndex);
+      setFlashcards(updated);
+      if (currentIndex >= updated.length) {
+        setCurrentIndex(Math.max(0, updated.length - 1));
+      }
+      setIsFlipped(false);
+      toast({
+        title: 'Flashcard excluído',
+        description: 'O flashcard foi removido.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao excluir flashcard',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
-    setIsFlipped(false);
-    toast({
-      title: 'Flashcard excluído',
-      description: 'O flashcard foi removido.',
-    });
   };
 
   const handleNext = () => {
