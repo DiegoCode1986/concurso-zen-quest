@@ -99,7 +99,7 @@ const Index = () => {
             onBack={handleBackToDashboard}
           />
         ) : appState.view === 'random-study' ? (
-          <RandomStudyPage />
+          <RandomStudyPage onBack={handleBackToDashboard} />
         ) : appState.view === 'flashcards' ? (
           <FlashcardsPage onBack={handleBackToDashboard} />
         ) : (

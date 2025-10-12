@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Shuffle, CheckCircle2, XCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Shuffle, CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +18,11 @@ interface Question {
   folder_name?: string;
 }
 
-export const RandomStudyPage = () => {
+interface RandomStudyPageProps {
+  onBack?: () => void;
+}
+
+export const RandomStudyPage = ({ onBack }: RandomStudyPageProps) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -161,11 +165,23 @@ export const RandomStudyPage = () => {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Estudo Aleatório</h1>
-            <p className="text-muted-foreground">
-              Questão {currentIndex + 1} de {questions.length}
-            </p>
+          <div className="flex items-center gap-3">
+            {onBack && (
+              <Button
+                onClick={onBack}
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+            )}
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Estudo Aleatório</h1>
+              <p className="text-muted-foreground">
+                Questão {currentIndex + 1} de {questions.length}
+              </p>
+            </div>
           </div>
           <Button onClick={handleShuffle} variant="outline" size="sm">
             <Shuffle className="w-4 h-4 mr-2" />
