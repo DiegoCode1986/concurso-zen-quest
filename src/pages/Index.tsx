@@ -101,7 +101,7 @@ const Index = () => {
         ) : appState.view === 'random-study' ? (
           <RandomStudyPage />
         ) : appState.view === 'flashcards' ? (
-          <FlashcardsPage />
+          <FlashcardsPage onBack={handleBackToDashboard} />
         ) : (
           <Dashboard
             user={user}

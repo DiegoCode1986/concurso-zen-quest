@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Plus, Eye, EyeOff, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Eye, EyeOff, Trash2, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -16,7 +16,11 @@ interface Flashcard {
   created_at: string;
 }
 
-export const FlashcardsPage = () => {
+interface FlashcardsPageProps {
+  onBack?: () => void;
+}
+
+export const FlashcardsPage = ({ onBack }: FlashcardsPageProps = {}) => {
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -165,11 +169,23 @@ export const FlashcardsPage = () => {
     <div className="h-full flex flex-col p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Flash Cards</h1>
-          <p className="text-muted-foreground">
-            {flashcards.length > 0 ? `Card ${currentIndex + 1} de ${flashcards.length}` : 'Nenhum flashcard criado'}
-          </p>
+        <div className="flex items-center gap-4">
+          {onBack && (
+            <Button
+              onClick={onBack}
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          )}
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Flash Cards</h1>
+            <p className="text-muted-foreground">
+              {flashcards.length > 0 ? `Card ${currentIndex + 1} de ${flashcards.length}` : 'Nenhum flashcard criado'}
+            </p>
+          </div>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
