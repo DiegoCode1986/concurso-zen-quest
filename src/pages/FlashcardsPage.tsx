@@ -33,6 +33,15 @@ export const FlashcardsPage = ({ onBack }: FlashcardsPageProps = {}) => {
     fetchFlashcards();
   }, []);
 
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
   const fetchFlashcards = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -47,7 +56,7 @@ export const FlashcardsPage = ({ onBack }: FlashcardsPageProps = {}) => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setFlashcards(data || []);
+      setFlashcards(shuffleArray(data || []));
     } catch (error: any) {
       toast({
         title: 'Erro ao carregar flashcards',
