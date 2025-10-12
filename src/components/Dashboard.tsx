@@ -166,8 +166,9 @@ export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNav
 
         {/* Top Actions */}
         <div className="flex flex-col gap-3 mb-6 sm:mb-8">
-          <div className="flex gap-3">
-            <div className="relative flex-1">
+          {/* Search field - Full width on mobile, with buttons on desktop */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1 order-2 sm:order-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
                 placeholder="Buscar matérias..."
@@ -176,24 +177,26 @@ export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNav
                 className="pl-10 h-12 bg-card/80 backdrop-blur-sm border-border/50 focus:bg-card transition-all duration-300"
               />
             </div>
-            <Button 
-              onClick={onRandomStudy}
-              variant="outline"
-              size="lg"
-              className="h-12 px-4 sm:px-6 shrink-0"
-            >
-              <Shuffle className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
-              <span className="hidden sm:inline text-sm sm:text-base">Estudo Aleatório</span>
-              <span className="sm:hidden text-sm">Aleatório</span>
-            </Button>
-            <Button 
-              onClick={() => setIsCreateDialogOpen(true)}
-              size="lg"
-              className="h-12 px-4 sm:px-6 bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
-            >
-              <Plus className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
-              <span className="text-sm sm:text-base">Nova Matéria</span>
-            </Button>
+            <div className="flex gap-3 order-1 sm:order-2">
+              <Button 
+                onClick={onRandomStudy}
+                variant="outline"
+                size="lg"
+                className="h-12 px-4 sm:px-6 flex-1 sm:flex-none"
+              >
+                <Shuffle className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
+                <span className="hidden sm:inline text-sm sm:text-base">Estudo Aleatório</span>
+                <span className="sm:hidden text-sm">Aleatório</span>
+              </Button>
+              <Button 
+                onClick={() => setIsCreateDialogOpen(true)}
+                size="lg"
+                className="h-12 px-4 sm:px-6 bg-primary text-primary-foreground hover:bg-primary/90 flex-1 sm:flex-none"
+              >
+                <Plus className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
+                <span className="text-sm sm:text-base">Nova Matéria</span>
+              </Button>
+            </div>
           </div>
         </div>
 
