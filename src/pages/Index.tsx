@@ -5,10 +5,11 @@ import { Dashboard } from '@/components/Dashboard';
 import { QuestionsPage } from '@/pages/QuestionsPage';
 import { RandomStudyPage } from '@/pages/RandomStudyPage';
 import { FlashcardsPage } from '@/pages/FlashcardsPage';
+import { TimeclockPage } from '@/pages/TimeclockPage';
 import { Sidebar } from '@/components/Sidebar';
 import type { User, Session } from '@supabase/supabase-js';
 
-type ViewState = 'dashboard' | 'questions' | 'random-study' | 'flashcards';
+type ViewState = 'dashboard' | 'questions' | 'random-study' | 'flashcards' | 'timeclock';
 
 interface AppState {
   view: ViewState;
@@ -65,7 +66,7 @@ const Index = () => {
     setAppState({ view: 'dashboard' });
   };
 
-  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards') => {
+  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock') => {
     setAppState({ view });
   };
 
@@ -102,6 +103,8 @@ const Index = () => {
           <RandomStudyPage onBack={handleBackToDashboard} />
         ) : appState.view === 'flashcards' ? (
           <FlashcardsPage onBack={handleBackToDashboard} />
+        ) : appState.view === 'timeclock' ? (
+          <TimeclockPage onBack={handleBackToDashboard} />
         ) : (
           <Dashboard
             user={user}
