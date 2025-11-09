@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Search, Plus, MoreVertical, Pencil, Trash2, CheckCircle, XCircle, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Search, Plus, MoreVertical, Pencil, Trash2, CheckCircle, XCircle, RotateCcw, FileDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Pagination,
@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { CreateQuestionDialog } from '@/components/CreateQuestionDialog';
 import { StudyTimer } from '@/components/StudyTimer';
+import { exportQuestionsToPDF } from '@/utils/pdfExport';
 
 interface Question {
   id: string;
@@ -121,6 +122,31 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
     });
   };
 
+  const handleExportPDF = () => {
+    if (questions.length === 0) {
+      toast({
+        title: 'Nenhuma questão para exportar',
+        description: 'Crie algumas questões antes de exportar.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      exportQuestionsToPDF(questions, folderName);
+      toast({
+        title: 'PDF gerado com sucesso!',
+        description: `${questions.length} ${questions.length === 1 ? 'questão exportada' : 'questões exportadas'}.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao gerar PDF',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
@@ -181,15 +207,27 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
               className="pl-10 h-12 bg-white/80 backdrop-blur-sm border-border/50 focus:bg-white transition-all duration-300"
             />
           </div>
-          <Button 
-            onClick={() => setIsCreateDialogOpen(true)}
-            variant="gradient"
-            size="lg"
-            className="h-11 sm:h-12 px-4 sm:px-6"
-          >
-            <Plus className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
-            <span className="text-sm sm:text-base">Nova Questão</span>
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              onClick={handleExportPDF}
+              variant="outline"
+              size="lg"
+              disabled={questions.length === 0}
+              className="h-11 sm:h-12 px-4 sm:px-6"
+            >
+              <FileDown className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
+              <span className="text-sm sm:text-base">Exportar PDF</span>
+            </Button>
+            <Button 
+              onClick={() => setIsCreateDialogOpen(true)}
+              variant="gradient"
+              size="lg"
+              className="h-11 sm:h-12 px-4 sm:px-6"
+            >
+              <Plus className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
+              <span className="text-sm sm:text-base">Nova Questão</span>
+            </Button>
+          </div>
         </div>
 
         {/* Questions List */}
