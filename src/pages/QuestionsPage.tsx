@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Search, Plus, MoreVertical, Pencil, Trash2, CheckCircle, XCircle, RotateCcw, FileDown } from 'lucide-react';
+import { ArrowLeft, Search, Plus, MoreVertical, Pencil, Trash2, CheckCircle, XCircle, RotateCcw, FileDown, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Pagination,
@@ -46,8 +46,10 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string | boolean>>({});
   const [answeredQuestions, setAnsweredQuestions] = useState<Record<string, string | boolean>>({});
   const [showResults, setShowResults] = useState<Record<string, boolean>>({});
+  const [eliminatedOptions, setEliminatedOptions] = useState<Record<string, Set<string | boolean>>>({});
   const [currentPage, setCurrentPage] = useState(1);
   const questionsPerPage = 5;
   const { toast } = useToast();
@@ -109,13 +111,62 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
   const endIndex = startIndex + questionsPerPage;
   const currentQuestions = filteredQuestions.slice(startIndex, endIndex);
 
+  const handleSelectAnswer = (questionId: string, answer: string | boolean) => {
+    setSelectedAnswers(prev => ({ ...prev, [questionId]: answer }));
+  };
+
+  const handleEliminateOption = (questionId: string, option: string | boolean) => {
+    setEliminatedOptions(prev => {
+      const newState = { ...prev };
+      const currentEliminated = newState[questionId] || new Set();
+      const newEliminated = new Set(currentEliminated);
+      
+      if (newEliminated.has(option)) {
+        newEliminated.delete(option);
+      } else {
+        newEliminated.add(option);
+      }
+      
+      newState[questionId] = newEliminated;
+      return newState;
+    });
+
+    // Remove seleção se a opção eliminada estava selecionada
+    setSelectedAnswers(prev => {
+      if (prev[questionId] === option) {
+        const newState = { ...prev };
+        delete newState[questionId];
+        return newState;
+      }
+      return prev;
+    });
+  };
+
+  const handleConfirmAnswer = (questionId: string) => {
+    const selectedAnswer = selectedAnswers[questionId];
+    if (selectedAnswer === undefined) return;
+
+    setAnsweredQuestions(prev => ({ ...prev, [questionId]: selectedAnswer }));
+    setShowResults(prev => ({ ...prev, [questionId]: true }));
+  };
+
   const handleTryAgain = (questionId: string) => {
+    setSelectedAnswers(prev => {
+      const newState = { ...prev };
+      delete newState[questionId];
+      return newState;
+    });
     setAnsweredQuestions(prev => {
       const newState = { ...prev };
       delete newState[questionId];
       return newState;
     });
     setShowResults(prev => {
+      const newState = { ...prev };
+      delete newState[questionId];
+      return newState;
+    });
+    setEliminatedOptions(prev => {
       const newState = { ...prev };
       delete newState[questionId];
       return newState;
@@ -311,87 +362,141 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
                     <div className="space-y-2">
                       {question.options.map((option, index) => {
                         const isAnswered = answeredQuestions[question.id] !== undefined;
-                        const isSelected = answeredQuestions[question.id] === option;
+                        const isSelected = selectedAnswers[question.id] === option;
+                        const isSelectedAnswered = answeredQuestions[question.id] === option;
                         const isCorrect = option === question.correct_answer;
                         const showAnswer = showResults[question.id];
+                        const isEliminated = eliminatedOptions[question.id]?.has(option);
                         
                         return (
-                          <button
-                            key={index}
-                            onClick={() => {
-                              if (!isAnswered) {
-                                setAnsweredQuestions(prev => ({ ...prev, [question.id]: option }));
-                                setShowResults(prev => ({ ...prev, [question.id]: true }));
-                              }
-                            }}
-                            disabled={isAnswered}
-                            className={`w-full p-3 rounded-lg border transition-colors text-left ${
-                              showAnswer && isCorrect
-                                ? 'bg-subject-green/10 border-subject-green text-subject-green'
-                                : showAnswer && isSelected && !isCorrect
-                                ? 'bg-destructive/10 border-destructive text-destructive'
-                                : isSelected && !showAnswer
-                                ? 'bg-primary/10 border-primary text-primary'
-                                : 'bg-muted/50 border-border hover:bg-muted/70'
-                            } ${!isAnswered ? 'cursor-pointer' : 'cursor-default'}`}
-                          >
-                            <div className="flex items-center gap-2">
-                              {showAnswer && isCorrect && (
-                                <CheckCircle className="w-4 h-4 text-subject-green" />
-                              )}
-                              {showAnswer && isSelected && !isCorrect && (
-                                <XCircle className="w-4 h-4 text-destructive" />
-                              )}
-                              <span className="font-medium text-sm">
-                                {String.fromCharCode(65 + index)})
-                              </span>
-                              <span className="text-sm">{option}</span>
-                            </div>
-                          </button>
+                          <div key={index} className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                if (!isAnswered && !isEliminated) {
+                                  handleSelectAnswer(question.id, option);
+                                }
+                              }}
+                              disabled={isAnswered || isEliminated}
+                              className={`flex-1 p-3 rounded-lg border transition-all text-left ${
+                                showAnswer && isCorrect
+                                  ? 'bg-subject-green/10 border-subject-green text-subject-green'
+                                  : showAnswer && isSelectedAnswered && !isCorrect
+                                  ? 'bg-destructive/10 border-destructive text-destructive'
+                                  : isSelected && !showAnswer
+                                  ? 'bg-primary/10 border-primary text-primary'
+                                  : isEliminated
+                                  ? 'bg-muted/30 border-border opacity-50'
+                                  : 'bg-muted/50 border-border hover:bg-muted/70'
+                              } ${!isAnswered && !isEliminated ? 'cursor-pointer' : 'cursor-default'}`}
+                            >
+                              <div className="flex items-center gap-2">
+                                {showAnswer && isCorrect && (
+                                  <CheckCircle className="w-4 h-4 text-subject-green" />
+                                )}
+                                {showAnswer && isSelectedAnswered && !isCorrect && (
+                                  <XCircle className="w-4 h-4 text-destructive" />
+                                )}
+                                <span className="font-medium text-sm">
+                                  {String.fromCharCode(65 + index)})
+                                </span>
+                                <span className={`text-sm ${isEliminated ? 'line-through' : ''}`}>{option}</span>
+                              </div>
+                            </button>
+                            {!isAnswered && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEliminateOption(question.id, option)}
+                                className="h-9 w-9 p-0 shrink-0"
+                              >
+                                <X className={`w-4 h-4 ${isEliminated ? 'text-primary' : 'text-muted-foreground'}`} />
+                              </Button>
+                            )}
+                          </div>
                         );
                       })}
+                      
+                      {selectedAnswers[question.id] !== undefined && !showResults[question.id] && (
+                        <div className="mt-4 flex justify-center">
+                          <Button
+                            onClick={() => handleConfirmAnswer(question.id)}
+                            className="flex items-center gap-2"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                            Responder
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   ) : (
-                    <div className="flex items-center gap-4">
-                      {[true, false].map((value) => {
-                        const isAnswered = answeredQuestions[question.id] !== undefined;
-                        const isSelected = answeredQuestions[question.id] === value;
-                        const isCorrect = question.correct_boolean === value;
-                        const showAnswer = showResults[question.id];
-                        
-                        return (
-                          <button
-                            key={value.toString()}
-                            onClick={() => {
-                              if (!isAnswered) {
-                                setAnsweredQuestions(prev => ({ ...prev, [question.id]: value }));
-                                setShowResults(prev => ({ ...prev, [question.id]: true }));
-                              }
-                            }}
-                            disabled={isAnswered}
-                            className={`flex items-center gap-2 p-3 rounded-lg transition-colors ${
-                              showAnswer && isCorrect
-                                ? 'bg-subject-green/10 border border-subject-green text-subject-green'
-                                : showAnswer && isSelected && !isCorrect
-                                ? 'bg-destructive/10 border border-destructive text-destructive'
-                                : isSelected && !showAnswer
-                                ? 'bg-primary/10 border border-primary text-primary'
-                                : 'bg-muted/50 hover:bg-muted/70'
-                            } ${!isAnswered ? 'cursor-pointer' : 'cursor-default'}`}
+                    <>
+                      <div className="flex items-center gap-4">
+                        {[true, false].map((value) => {
+                          const isAnswered = answeredQuestions[question.id] !== undefined;
+                          const isSelected = selectedAnswers[question.id] === value;
+                          const isSelectedAnswered = answeredQuestions[question.id] === value;
+                          const isCorrect = question.correct_boolean === value;
+                          const showAnswer = showResults[question.id];
+                          const isEliminated = eliminatedOptions[question.id]?.has(value);
+                          
+                          return (
+                            <div key={value.toString()} className="flex items-center gap-2 flex-1">
+                              <button
+                                onClick={() => {
+                                  if (!isAnswered && !isEliminated) {
+                                    handleSelectAnswer(question.id, value);
+                                  }
+                                }}
+                                disabled={isAnswered || isEliminated}
+                                className={`flex items-center justify-center gap-2 p-3 rounded-lg transition-all flex-1 ${
+                                  showAnswer && isCorrect
+                                    ? 'bg-subject-green/10 border border-subject-green text-subject-green'
+                                    : showAnswer && isSelectedAnswered && !isCorrect
+                                    ? 'bg-destructive/10 border border-destructive text-destructive'
+                                    : isSelected && !showAnswer
+                                    ? 'bg-primary/10 border border-primary text-primary'
+                                    : isEliminated
+                                    ? 'bg-muted/30 border border-border opacity-50'
+                                    : 'bg-muted/50 hover:bg-muted/70'
+                                } ${!isAnswered && !isEliminated ? 'cursor-pointer' : 'cursor-default'}`}
+                              >
+                                {showAnswer && isCorrect && (
+                                  <CheckCircle className="w-4 h-4" />
+                                )}
+                                {showAnswer && isSelectedAnswered && !isCorrect && (
+                                  <XCircle className="w-4 h-4" />
+                                )}
+                                <span className={`text-sm font-medium ${isEliminated ? 'line-through' : ''}`}>
+                                  {value ? 'Verdadeiro' : 'Falso'}
+                                </span>
+                              </button>
+                              {!isAnswered && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleEliminateOption(question.id, value)}
+                                  className="h-9 w-9 p-0 shrink-0"
+                                >
+                                  <X className={`w-4 h-4 ${isEliminated ? 'text-primary' : 'text-muted-foreground'}`} />
+                                </Button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      
+                      {selectedAnswers[question.id] !== undefined && !showResults[question.id] && (
+                        <div className="mt-4 flex justify-center">
+                          <Button
+                            onClick={() => handleConfirmAnswer(question.id)}
+                            className="flex items-center gap-2"
                           >
-                            {showAnswer && isCorrect && (
-                              <CheckCircle className="w-4 h-4" />
-                            )}
-                            {showAnswer && isSelected && !isCorrect && (
-                              <XCircle className="w-4 h-4" />
-                            )}
-                            <span className="text-sm font-medium">
-                              {value ? 'Verdadeiro' : 'Falso'}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                            <CheckCircle className="w-4 h-4" />
+                            Responder
+                          </Button>
+                        </div>
+                      )}
+                    </>
                   )}
                   
                   {question.explanation && showResults[question.id] && (
