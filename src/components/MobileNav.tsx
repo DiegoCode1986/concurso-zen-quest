@@ -1,12 +1,12 @@
-import { Folder, Shuffle, BookOpen, Menu, Clock } from 'lucide-react';
+import { Folder, Shuffle, BookOpen, Menu, Clock, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
 interface MobileNavProps {
-  currentView: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock';
-  onNavigate: (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock') => void;
+  currentView: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics';
+  onNavigate: (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics') => void;
 }
 
 export const MobileNav = ({ currentView, onNavigate }: MobileNavProps) => {
@@ -33,9 +33,14 @@ export const MobileNav = ({ currentView, onNavigate }: MobileNavProps) => {
       label: 'Bater Ponto',
       icon: Clock,
     },
+    {
+      id: 'statistics' as const,
+      label: 'Estatísticas',
+      icon: BarChart3,
+    },
   ];
 
-  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock') => {
+  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics') => {
     onNavigate(view);
     setIsOpen(false);
   };

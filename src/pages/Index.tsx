@@ -9,7 +9,9 @@ import { TimeclockPage } from '@/pages/TimeclockPage';
 import { Sidebar } from '@/components/Sidebar';
 import type { User, Session } from '@supabase/supabase-js';
 
-type ViewState = 'dashboard' | 'questions' | 'random-study' | 'flashcards' | 'timeclock';
+import { StatisticsPage } from '@/pages/StatisticsPage';
+
+type ViewState = 'dashboard' | 'questions' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics';
 
 interface AppState {
   view: ViewState;
@@ -66,7 +68,7 @@ const Index = () => {
     setAppState({ view: 'dashboard' });
   };
 
-  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock') => {
+  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics') => {
     setAppState({ view });
   };
 
@@ -105,6 +107,8 @@ const Index = () => {
           <FlashcardsPage onBack={handleBackToDashboard} />
         ) : appState.view === 'timeclock' ? (
           <TimeclockPage onBack={handleBackToDashboard} />
+        ) : appState.view === 'statistics' ? (
+          <StatisticsPage onBack={handleBackToDashboard} />
         ) : (
           <Dashboard
             user={user}

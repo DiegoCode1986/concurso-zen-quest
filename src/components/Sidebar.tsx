@@ -1,9 +1,9 @@
-import { Folder, Clock, BookOpen, Shuffle } from 'lucide-react';
+import { Folder, Clock, BookOpen, Shuffle, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SidebarProps {
-  currentView: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock';
-  onNavigate: (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock') => void;
+  currentView: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics';
+  onNavigate: (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics') => void;
 }
 
 export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
@@ -27,6 +27,11 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
       id: 'timeclock' as const,
       label: 'Bater Ponto',
       icon: Clock,
+    },
+    {
+      id: 'statistics' as const,
+      label: 'Estatísticas',
+      icon: BarChart3,
     },
   ];
 
