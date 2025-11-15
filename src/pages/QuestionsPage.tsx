@@ -46,6 +46,15 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState<{
+    id: string;
+    title: string;
+    type: 'multiple_choice' | 'true_false';
+    options: string[] | null;
+    correct_answer: string | null;
+    correct_boolean: boolean | null;
+    explanation: string | null;
+  } | null>(null);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string | boolean>>({});
   const [answeredQuestions, setAnsweredQuestions] = useState<Record<string, string | boolean>>({});
   const [showResults, setShowResults] = useState<Record<string, boolean>>({});
@@ -79,6 +88,14 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
     fetchQuestions();
   }, [folderId]);
 
+  const handleEditQuestion = (question: Question) => {
+    setEditingQuestion({
+      ...question,
+      type: question.type as 'multiple_choice' | 'true_false',
+    });
+    setIsCreateDialogOpen(true);
+  };
+
   const handleDeleteQuestion = async (questionId: string) => {
     try {
       const { error } = await supabase
@@ -99,6 +116,13 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
         description: error.message,
         variant: 'destructive',
       });
+    }
+  };
+
+  const handleDialogClose = (open: boolean) => {
+    setIsCreateDialogOpen(open);
+    if (!open) {
+      setEditingQuestion(null);
     }
   };
 
@@ -336,16 +360,11 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-40">
-                        <DropdownMenuItem onClick={() => {
-                          toast({
-                            title: 'Em desenvolvimento',
-                            description: 'Funcionalidade de edição será implementada em breve.',
-                          });
-                        }}>
+                        <DropdownMenuItem onClick={() => handleEditQuestion(question)}>
                           <Pencil className="w-4 h-4 mr-2" />
                           Editar
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => handleDeleteQuestion(question.id)}
                           className="text-destructive focus:text-destructive"
                         >
@@ -576,9 +595,10 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
       {/* Create Question Dialog */}
       <CreateQuestionDialog
         open={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
+        onOpenChange={handleDialogClose}
         folderId={folderId}
         onSuccess={fetchQuestions}
+        editQuestion={editingQuestion}
       />
     </div>
   );
