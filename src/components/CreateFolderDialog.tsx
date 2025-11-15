@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,19 +45,19 @@ export const CreateFolderDialog = ({ open, onOpenChange, onSuccess, editFolder }
   const { toast } = useToast();
 
   // Update form when editFolder changes
-  useState(() => {
+  useEffect(() => {
     if (editFolder) {
       setFormData({
         name: editFolder.name,
         description: editFolder.description || '',
       });
-    } else {
+    } else if (open) {
       setFormData({
         name: '',
         description: '',
       });
     }
-  });
+  }, [editFolder, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
