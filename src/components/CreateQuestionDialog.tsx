@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -78,22 +78,6 @@ export const CreateQuestionDialog = ({ open, onOpenChange, folderId, onSuccess, 
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Update form when editQuestion changes
-  useState(() => {
-    if (editQuestion) {
-      setFormData({
-        title: editQuestion.title,
-        type: editQuestion.type,
-        options: editQuestion.options || ['', ''],
-        correct_answer: editQuestion.correct_answer || '',
-        correct_boolean: editQuestion.correct_boolean,
-        explanation: editQuestion.explanation || '',
-      });
-    } else {
-      resetForm();
-    }
-  });
-
   const resetForm = () => {
     setFormData({
       title: '',
@@ -104,6 +88,22 @@ export const CreateQuestionDialog = ({ open, onOpenChange, folderId, onSuccess, 
       explanation: '',
     });
   };
+
+  // Update form when editQuestion changes
+  useEffect(() => {
+    if (editQuestion) {
+      setFormData({
+        title: editQuestion.title,
+        type: editQuestion.type,
+        options: editQuestion.options || ['', ''],
+        correct_answer: editQuestion.correct_answer || '',
+        correct_boolean: editQuestion.correct_boolean,
+        explanation: editQuestion.explanation || '',
+      });
+    } else if (open) {
+      resetForm();
+    }
+  }, [editQuestion, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
