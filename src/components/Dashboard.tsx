@@ -39,6 +39,7 @@ export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNav
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [editingFolder, setEditingFolder] = useState<{ id: string; name: string; description: string | null } | null>(null);
   const { toast } = useToast();
 
   const fetchFolders = async () => {
@@ -77,6 +78,15 @@ export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNav
     fetchFolders();
   }, []);
 
+  const handleEditFolder = (folder: Folder) => {
+    setEditingFolder({
+      id: folder.id,
+      name: folder.name,
+      description: folder.description,
+    });
+    setIsCreateDialogOpen(true);
+  };
+
   const handleDeleteFolder = async (folderId: string) => {
     try {
       const { error } = await supabase
@@ -97,6 +107,13 @@ export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNav
         description: error.message,
         variant: 'destructive',
       });
+    }
+  };
+
+  const handleDialogClose = (open: boolean) => {
+    setIsCreateDialogOpen(open);
+    if (!open) {
+      setEditingFolder(null);
     }
   };
 
@@ -237,13 +254,7 @@ export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNav
                 createdAt={folder.created_at}
                 colorVariant={colorVariants[index % colorVariants.length]}
                 onClick={() => onFolderClick(folder.id, folder.name)}
-                onEdit={() => {
-                  // TODO: Implement edit functionality
-                  toast({
-                    title: 'Em desenvolvimento',
-                    description: 'Funcionalidade de edição será implementada em breve.',
-                  });
-                }}
+                onEdit={() => handleEditFolder(folder)}
                 onDelete={() => handleDeleteFolder(folder.id)}
               />
             ))}
@@ -254,8 +265,9 @@ export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNav
       {/* Create Folder Dialog */}
       <CreateFolderDialog
         open={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
+        onOpenChange={handleDialogClose}
         onSuccess={fetchFolders}
+        editFolder={editingFolder}
       />
     </div>
   );

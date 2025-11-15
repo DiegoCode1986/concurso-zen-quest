@@ -29,15 +29,35 @@ interface CreateFolderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  editFolder?: {
+    id: string;
+    name: string;
+    description: string | null;
+  } | null;
 }
 
-export const CreateFolderDialog = ({ open, onOpenChange, onSuccess }: CreateFolderDialogProps) => {
+export const CreateFolderDialog = ({ open, onOpenChange, onSuccess, editFolder }: CreateFolderDialogProps) => {
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
+    name: editFolder?.name || '',
+    description: editFolder?.description || '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  // Update form when editFolder changes
+  useState(() => {
+    if (editFolder) {
+      setFormData({
+        name: editFolder.name,
+        description: editFolder.description || '',
+      });
+    } else {
+      setFormData({
+        name: '',
+        description: '',
+      });
+    }
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,23 +75,42 @@ export const CreateFolderDialog = ({ open, onOpenChange, onSuccess }: CreateFold
         return;
       }
 
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) {
-        throw new Error('Usuário não autenticado');
+      if (editFolder) {
+        // Update existing folder
+        const { error } = await supabase
+          .from('folders')
+          .update({
+            name: validation.data.name,
+            description: validation.data.description || null,
+          })
+          .eq('id', editFolder.id);
+
+        if (error) throw error;
+
+        toast({
+          title: 'Matéria atualizada!',
+          description: 'Sua matéria foi atualizada com sucesso.',
+        });
+      } else {
+        // Create new folder
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData.user) {
+          throw new Error('Usuário não autenticado');
+        }
+
+        const { error } = await supabase.from('folders').insert({
+          name: validation.data.name,
+          description: validation.data.description || null,
+          user_id: userData.user.id,
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: 'Matéria criada!',
+          description: 'Sua nova matéria foi criada com sucesso.',
+        });
       }
-
-      const { error } = await supabase.from('folders').insert({
-        name: validation.data.name,
-        description: validation.data.description || null,
-        user_id: userData.user.id,
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: 'Matéria criada!',
-        description: 'Sua nova matéria foi criada com sucesso.',
-      });
 
       setFormData({ name: '', description: '' });
       onOpenChange(false);
@@ -91,9 +130,9 @@ export const CreateFolderDialog = ({ open, onOpenChange, onSuccess }: CreateFold
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Nova Matéria</DialogTitle>
+          <DialogTitle>{editFolder ? 'Editar Matéria' : 'Nova Matéria'}</DialogTitle>
           <DialogDescription>
-            Crie uma nova matéria para organizar suas questões de estudo.
+            {editFolder ? 'Edite as informações da sua matéria.' : 'Crie uma nova matéria para organizar suas questões de estudo.'}
           </DialogDescription>
         </DialogHeader>
         
@@ -134,7 +173,7 @@ export const CreateFolderDialog = ({ open, onOpenChange, onSuccess }: CreateFold
               Cancelar
             </Button>
             <Button type="submit" disabled={isLoading} variant="gradient">
-              {isLoading ? 'Criando...' : 'Criar matéria'}
+              {isLoading ? (editFolder ? 'Salvando...' : 'Criando...') : (editFolder ? 'Salvar' : 'Criar matéria')}
             </Button>
           </DialogFooter>
         </form>

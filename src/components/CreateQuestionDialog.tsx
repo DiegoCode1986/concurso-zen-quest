@@ -55,19 +55,44 @@ interface CreateQuestionDialogProps {
   onOpenChange: (open: boolean) => void;
   folderId: string;
   onSuccess: () => void;
+  editQuestion?: {
+    id: string;
+    title: string;
+    type: 'multiple_choice' | 'true_false';
+    options: string[] | null;
+    correct_answer: string | null;
+    correct_boolean: boolean | null;
+    explanation: string | null;
+  } | null;
 }
 
-export const CreateQuestionDialog = ({ open, onOpenChange, folderId, onSuccess }: CreateQuestionDialogProps) => {
+export const CreateQuestionDialog = ({ open, onOpenChange, folderId, onSuccess, editQuestion }: CreateQuestionDialogProps) => {
   const [formData, setFormData] = useState({
-    title: '',
-    type: '' as 'multiple_choice' | 'true_false' | '',
-    options: ['', ''],
-    correct_answer: '',
-    correct_boolean: undefined as boolean | undefined,
-    explanation: '',
+    title: editQuestion?.title || '',
+    type: editQuestion?.type || ('' as 'multiple_choice' | 'true_false' | ''),
+    options: editQuestion?.options || ['', ''],
+    correct_answer: editQuestion?.correct_answer || '',
+    correct_boolean: editQuestion?.correct_boolean,
+    explanation: editQuestion?.explanation || '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  // Update form when editQuestion changes
+  useState(() => {
+    if (editQuestion) {
+      setFormData({
+        title: editQuestion.title,
+        type: editQuestion.type,
+        options: editQuestion.options || ['', ''],
+        correct_answer: editQuestion.correct_answer || '',
+        correct_boolean: editQuestion.correct_boolean,
+        explanation: editQuestion.explanation || '',
+      });
+    } else {
+      resetForm();
+    }
+  });
 
   const resetForm = () => {
     setFormData({
@@ -116,34 +141,73 @@ export const CreateQuestionDialog = ({ open, onOpenChange, folderId, onSuccess }
         throw new Error('Usuário não autenticado');
       }
 
-      const questionData = {
-        title: formData.title,
-        type: formData.type,
-        folder_id: folderId,
-        user_id: userData.user.id,
-        explanation: formData.explanation || null,
-        ...(formData.type === 'multiple_choice' 
-          ? {
-              options: formData.options.filter(option => option.trim() !== ''),
-              correct_answer: formData.correct_answer,
-              correct_boolean: null,
-            }
-          : {
-              options: null,
-              correct_answer: null,
-              correct_boolean: formData.correct_boolean,
-            }
-        ),
-      };
+      if (editQuestion) {
+        // Update existing question
+        const questionData = {
+          title: formData.title,
+          type: formData.type,
+          explanation: formData.explanation || null,
+          ...(formData.type === 'multiple_choice' 
+            ? {
+                options: formData.options.filter(option => option.trim() !== ''),
+                correct_answer: formData.correct_answer,
+                correct_boolean: null,
+              }
+            : {
+                options: null,
+                correct_answer: null,
+                correct_boolean: formData.correct_boolean,
+              }
+          ),
+        };
 
-      const { error } = await supabase.from('questions').insert(questionData);
+        const { error } = await supabase
+          .from('questions')
+          .update(questionData)
+          .eq('id', editQuestion.id);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: 'Questão criada!',
-        description: 'Sua nova questão foi criada com sucesso.',
-      });
+        toast({
+          title: 'Questão atualizada!',
+          description: 'Sua questão foi atualizada com sucesso.',
+        });
+      } else {
+        // Create new question
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData.user) {
+          throw new Error('Usuário não autenticado');
+        }
+
+        const questionData = {
+          title: formData.title,
+          type: formData.type,
+          folder_id: folderId,
+          user_id: userData.user.id,
+          explanation: formData.explanation || null,
+          ...(formData.type === 'multiple_choice' 
+            ? {
+                options: formData.options.filter(option => option.trim() !== ''),
+                correct_answer: formData.correct_answer,
+                correct_boolean: null,
+              }
+            : {
+                options: null,
+                correct_answer: null,
+                correct_boolean: formData.correct_boolean,
+              }
+          ),
+        };
+
+        const { error } = await supabase.from('questions').insert(questionData);
+
+        if (error) throw error;
+
+        toast({
+          title: 'Questão criada!',
+          description: 'Sua nova questão foi criada com sucesso.',
+        });
+      }
 
       resetForm();
       onOpenChange(false);
@@ -356,7 +420,7 @@ export const CreateQuestionDialog = ({ open, onOpenChange, folderId, onSuccess }
               Cancelar
             </Button>
             <Button type="submit" disabled={isLoading} variant="gradient">
-              {isLoading ? 'Criando...' : 'Criar questão'}
+              {isLoading ? (editQuestion ? 'Salvando...' : 'Criando...') : (editQuestion ? 'Salvar' : 'Criar questão')}
             </Button>
           </DialogFooter>
         </form>
