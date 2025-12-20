@@ -39,9 +39,10 @@ interface QuestionsPageProps {
   folderId: string;
   folderName: string;
   onBack: () => void;
+  parentFolderName?: string;
 }
 
-export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPageProps) => {
+export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }: QuestionsPageProps) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -254,6 +255,14 @@ export const QuestionsPage = ({ folderId, folderName, onBack }: QuestionsPagePro
                 <span className="hidden xs:inline">Voltar</span>
               </Button>
               <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mb-0.5">
+                  {parentFolderName && (
+                    <>
+                      <span>{parentFolderName}</span>
+                      <span>/</span>
+                    </>
+                  )}
+                </div>
                 <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">{folderName}</h1>
                 <p className="text-xs text-muted-foreground">
                   {questions.length} {questions.length === 1 ? 'questão' : 'questões'}

@@ -6,17 +6,21 @@ import { QuestionsPage } from '@/pages/QuestionsPage';
 import { RandomStudyPage } from '@/pages/RandomStudyPage';
 import { FlashcardsPage } from '@/pages/FlashcardsPage';
 import { TimeclockPage } from '@/pages/TimeclockPage';
+import { FolderPage } from '@/pages/FolderPage';
 import { Sidebar } from '@/components/Sidebar';
 import type { User, Session } from '@supabase/supabase-js';
 
 import { StatisticsPage } from '@/pages/StatisticsPage';
 
-type ViewState = 'dashboard' | 'questions' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics';
+type ViewState = 'dashboard' | 'folder' | 'questions' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics';
 
 interface AppState {
   view: ViewState;
   selectedFolderId?: string;
   selectedFolderName?: string;
+  // For breadcrumb navigation
+  parentFolderId?: string;
+  parentFolderName?: string;
 }
 
 const Index = () => {
@@ -56,16 +60,58 @@ const Index = () => {
     setAppState({ view: 'dashboard' });
   };
 
+  // When clicking a top-level folder from dashboard, go to folder view
   const handleFolderClick = (folderId: string, folderName: string) => {
     setAppState({
-      view: 'questions',
+      view: 'folder',
       selectedFolderId: folderId,
       selectedFolderName: folderName,
     });
   };
 
+  // When clicking a subfolder, go to questions view
+  const handleSubfolderClick = (folderId: string, folderName: string) => {
+    setAppState(prev => ({
+      view: 'questions',
+      selectedFolderId: folderId,
+      selectedFolderName: folderName,
+      parentFolderId: prev.selectedFolderId,
+      parentFolderName: prev.selectedFolderName,
+    }));
+  };
+
+  // View questions for a folder directly
+  const handleViewQuestions = (folderId: string, folderName: string) => {
+    setAppState(prev => ({
+      view: 'questions',
+      selectedFolderId: folderId,
+      selectedFolderName: folderName,
+      parentFolderId: prev.view === 'folder' ? undefined : prev.parentFolderId,
+      parentFolderName: prev.view === 'folder' ? undefined : prev.parentFolderName,
+    }));
+  };
+
   const handleBackToDashboard = () => {
     setAppState({ view: 'dashboard' });
+  };
+
+  const handleBackToFolder = () => {
+    if (appState.parentFolderId && appState.parentFolderName) {
+      setAppState({
+        view: 'folder',
+        selectedFolderId: appState.parentFolderId,
+        selectedFolderName: appState.parentFolderName,
+      });
+    } else if (appState.view === 'questions') {
+      // If coming from folder questions directly (not subfolder), go back to folder
+      setAppState(prev => ({
+        view: 'folder',
+        selectedFolderId: prev.selectedFolderId,
+        selectedFolderName: prev.selectedFolderName,
+      }));
+    } else {
+      handleBackToDashboard();
+    }
   };
 
   const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics') => {
@@ -87,19 +133,35 @@ const Index = () => {
     return <AuthPage onAuthSuccess={handleAuthSuccess} />;
   }
 
+  const getSidebarView = () => {
+    if (appState.view === 'questions' || appState.view === 'folder') {
+      return 'dashboard';
+    }
+    return appState.view;
+  };
+
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar 
-        currentView={appState.view === 'questions' ? 'dashboard' : appState.view}
+        currentView={getSidebarView()}
         onNavigate={handleNavigate}
       />
       
       <div className="flex-1 overflow-auto lg:ml-64">
-        {appState.view === 'questions' && appState.selectedFolderId && appState.selectedFolderName ? (
-          <QuestionsPage
+        {appState.view === 'folder' && appState.selectedFolderId && appState.selectedFolderName ? (
+          <FolderPage
             folderId={appState.selectedFolderId}
             folderName={appState.selectedFolderName}
             onBack={handleBackToDashboard}
+            onSubfolderClick={handleSubfolderClick}
+            onViewQuestions={handleViewQuestions}
+          />
+        ) : appState.view === 'questions' && appState.selectedFolderId && appState.selectedFolderName ? (
+          <QuestionsPage
+            folderId={appState.selectedFolderId}
+            folderName={appState.selectedFolderName}
+            onBack={appState.parentFolderId ? handleBackToFolder : handleBackToDashboard}
+            parentFolderName={appState.parentFolderName}
           />
         ) : appState.view === 'random-study' ? (
           <RandomStudyPage onBack={handleBackToDashboard} />
@@ -116,7 +178,7 @@ const Index = () => {
             onFolderClick={handleFolderClick}
             onRandomStudy={() => handleNavigate('random-study')}
             onNavigate={handleNavigate}
-            currentView={appState.view === 'questions' ? 'dashboard' : appState.view}
+            currentView={getSidebarView()}
           />
         )}
       </div>
