@@ -2,20 +2,12 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, LogOut, BookOpen, Shuffle } from 'lucide-react';
-import { SubjectCard } from './SubjectCard';
-import { CreateFolderDialog } from './CreateFolderDialog';
-import { MobileNav } from './MobileNav';
+import { Search, Plus, ArrowLeft, FolderOpen, ChevronRight, FileQuestion } from 'lucide-react';
+import { SubjectCard } from '@/components/SubjectCard';
+import { CreateFolderDialog } from '@/components/CreateFolderDialog';
 import { useToast } from '@/hooks/use-toast';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
-interface Folder {
+interface Subfolder {
   id: string;
   name: string;
   description: string | null;
@@ -24,29 +16,35 @@ interface Folder {
   subfolder_count: number;
 }
 
-interface DashboardProps {
-  user: any;
-  onSignOut: () => void;
-  onFolderClick: (folderId: string, folderName: string) => void;
-  onRandomStudy?: () => void;
-  onNavigate?: (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics') => void;
-  currentView?: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics';
+interface FolderPageProps {
+  folderId: string;
+  folderName: string;
+  onBack: () => void;
+  onSubfolderClick: (folderId: string, folderName: string) => void;
+  onViewQuestions: (folderId: string, folderName: string) => void;
 }
 
 const colorVariants = ['orange', 'blue', 'green', 'red', 'purple', 'teal', 'pink', 'indigo'] as const;
 
-export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNavigate, currentView = 'dashboard' }: DashboardProps) => {
-  const [folders, setFolders] = useState<Folder[]>([]);
+export const FolderPage = ({ 
+  folderId, 
+  folderName, 
+  onBack, 
+  onSubfolderClick,
+  onViewQuestions 
+}: FolderPageProps) => {
+  const [subfolders, setSubfolders] = useState<Subfolder[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingFolder, setEditingFolder] = useState<{ id: string; name: string; description: string | null } | null>(null);
+  const [parentQuestionCount, setParentQuestionCount] = useState(0);
   const { toast } = useToast();
 
-  const fetchFolders = async () => {
+  const fetchSubfolders = async () => {
     try {
-      // Fetch only top-level folders (parent_id is null)
-      const { data, error } = await supabase
+      // Fetch subfolders
+      const { data: subfoldersData, error: subfoldersError } = await supabase
         .from('folders')
         .select(`
           id,
@@ -55,14 +53,14 @@ export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNav
           created_at,
           questions(count)
         `)
-        .is('parent_id', null)
+        .eq('parent_id', folderId)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (subfoldersError) throw subfoldersError;
 
-      // For each folder, count its subfolders
-      const foldersWithCounts = await Promise.all(
-        (data || []).map(async (folder) => {
+      // For each subfolder, count its subfolders
+      const subfoldersWithCounts = await Promise.all(
+        (subfoldersData || []).map(async (folder) => {
           const { count } = await supabase
             .from('folders')
             .select('*', { count: 'exact', head: true })
@@ -76,10 +74,18 @@ export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNav
         })
       );
 
-      setFolders(foldersWithCounts);
+      setSubfolders(subfoldersWithCounts);
+
+      // Fetch question count for parent folder
+      const { count: parentQCount } = await supabase
+        .from('questions')
+        .select('*', { count: 'exact', head: true })
+        .eq('folder_id', folderId);
+
+      setParentQuestionCount(parentQCount || 0);
     } catch (error: any) {
       toast({
-        title: 'Erro ao carregar matérias',
+        title: 'Erro ao carregar subpastas',
         description: error.message,
         variant: 'destructive',
       });
@@ -89,10 +95,10 @@ export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNav
   };
 
   useEffect(() => {
-    fetchFolders();
-  }, []);
+    fetchSubfolders();
+  }, [folderId]);
 
-  const handleEditFolder = (folder: Folder) => {
+  const handleEditFolder = (folder: Subfolder) => {
     setEditingFolder({
       id: folder.id,
       name: folder.name,
@@ -101,23 +107,23 @@ export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNav
     setIsCreateDialogOpen(true);
   };
 
-  const handleDeleteFolder = async (folderId: string) => {
+  const handleDeleteFolder = async (subfolderId: string) => {
     try {
       const { error } = await supabase
         .from('folders')
         .delete()
-        .eq('id', folderId);
+        .eq('id', subfolderId);
 
       if (error) throw error;
 
-      setFolders(folders.filter(f => f.id !== folderId));
+      setSubfolders(subfolders.filter(f => f.id !== subfolderId));
       toast({
-        title: 'Matéria excluída',
-        description: 'A matéria foi removida com sucesso.',
+        title: 'Subpasta excluída',
+        description: 'A subpasta foi removida com sucesso.',
       });
     } catch (error: any) {
       toast({
-        title: 'Erro ao excluir matéria',
+        title: 'Erro ao excluir subpasta',
         description: error.message,
         variant: 'destructive',
       });
@@ -131,12 +137,10 @@ export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNav
     }
   };
 
-  const filteredFolders = folders.filter(folder =>
+  const filteredSubfolders = subfolders.filter(folder =>
     folder.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     folder.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const userInitials = user?.email?.charAt(0).toUpperCase() || 'U';
 
   if (loading) {
     return (
@@ -154,35 +158,26 @@ export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNav
       {/* Header */}
       <header className="bg-card/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-          <div className="flex items-center justify-between h-14 sm:h-16">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-              {onNavigate && <MobileNav currentView={currentView} onNavigate={onNavigate} />}
-              <div className="bg-gradient-to-br from-primary to-primary/80 p-1.5 sm:p-2 rounded-lg shadow-card shrink-0">
-                <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-lg sm:text-xl font-bold text-foreground">Questões Zen</h1>
-                <p className="text-xs text-muted-foreground hidden sm:block">Suas matérias de estudo</p>
-              </div>
-            </div>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                  <Avatar className="h-10 w-10 border-2 border-primary/20">
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-semibold">
-                      {userInitials}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end">
-                <DropdownMenuItem className="cursor-pointer" onClick={onSignOut}>
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sair
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div className="flex items-center h-14 sm:h-16">
+            <Button 
+              variant="ghost" 
+              onClick={onBack}
+              className="mr-3 p-2"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            
+            {/* Breadcrumb */}
+            <nav className="flex items-center text-sm">
+              <button 
+                onClick={onBack}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Minhas Matérias
+              </button>
+              <ChevronRight className="w-4 h-4 mx-2 text-muted-foreground" />
+              <span className="font-medium text-foreground">{folderName}</span>
+            </nav>
           </div>
         </div>
       </header>
@@ -191,18 +186,36 @@ export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNav
       <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Page Title */}
         <div className="mb-6">
-          <h2 className="text-3xl font-bold text-foreground mb-2">Minhas Matérias</h2>
-          <p className="text-muted-foreground">Organize suas questões por matéria e estude de forma eficiente</p>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="bg-gradient-to-br from-primary to-primary/80 p-2 rounded-lg">
+              <FolderOpen className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <h2 className="text-3xl font-bold text-foreground">{folderName}</h2>
+          </div>
+          <p className="text-muted-foreground">Organize seus temas e questões dentro desta matéria</p>
         </div>
+
+        {/* Quick Actions */}
+        {parentQuestionCount > 0 && (
+          <div className="mb-6">
+            <Button 
+              variant="outline" 
+              onClick={() => onViewQuestions(folderId, folderName)}
+              className="gap-2"
+            >
+              <FileQuestion className="w-4 h-4" />
+              Ver {parentQuestionCount} {parentQuestionCount === 1 ? 'questão' : 'questões'} desta matéria
+            </Button>
+          </div>
+        )}
 
         {/* Top Actions */}
         <div className="flex flex-col gap-3 mb-6 sm:mb-8">
-          {/* Search field - Full width on mobile, with buttons on desktop */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1 order-2 sm:order-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
-                placeholder="Buscar matérias..."
+                placeholder="Buscar temas..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 h-12 bg-card/80 backdrop-blur-sm border-border/50 focus:bg-card transition-all duration-300"
@@ -210,39 +223,29 @@ export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNav
             </div>
             <div className="flex gap-3 order-1 sm:order-2">
               <Button 
-                onClick={onRandomStudy}
-                variant="outline"
-                size="lg"
-                className="h-12 px-4 sm:px-6 flex-1 sm:flex-none"
-              >
-                <Shuffle className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
-                <span className="hidden sm:inline text-sm sm:text-base">Estudo Aleatório</span>
-                <span className="sm:hidden text-sm">Aleatório</span>
-              </Button>
-              <Button 
                 onClick={() => setIsCreateDialogOpen(true)}
                 size="lg"
                 className="h-12 px-4 sm:px-6 bg-primary text-primary-foreground hover:bg-primary/90 flex-1 sm:flex-none"
               >
                 <Plus className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
-                <span className="text-sm sm:text-base">Nova Matéria</span>
+                <span className="text-sm sm:text-base">Novo Tema</span>
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Folders Grid */}
-        {filteredFolders.length === 0 ? (
+        {/* Subfolders Grid */}
+        {filteredSubfolders.length === 0 ? (
           <div className="text-center py-16">
             <div className="bg-gradient-to-br from-muted/50 to-accent/20 rounded-2xl p-8 max-w-md mx-auto">
-              <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <FolderOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">
-                {searchTerm ? 'Nenhuma matéria encontrada' : 'Nenhuma matéria criada'}
+                {searchTerm ? 'Nenhum tema encontrado' : 'Nenhum tema criado'}
               </h3>
               <p className="text-muted-foreground mb-6">
                 {searchTerm 
                   ? 'Tente alterar o termo de busca'
-                  : 'Comece criando sua primeira matéria de estudo'
+                  : 'Organize melhor seus estudos criando temas dentro desta matéria'
                 }
               </p>
               {!searchTerm && (
@@ -251,14 +254,14 @@ export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNav
                   variant="gradient"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Criar primeira matéria
+                  Criar primeiro tema
                 </Button>
               )}
             </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {filteredFolders.map((folder, index) => (
+            {filteredSubfolders.map((folder, index) => (
               <SubjectCard
                 key={folder.id}
                 id={folder.id}
@@ -268,7 +271,7 @@ export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNav
                 subfolderCount={folder.subfolder_count}
                 createdAt={folder.created_at}
                 colorVariant={colorVariants[index % colorVariants.length]}
-                onClick={() => onFolderClick(folder.id, folder.name)}
+                onClick={() => onSubfolderClick(folder.id, folder.name)}
                 onEdit={() => handleEditFolder(folder)}
                 onDelete={() => handleDeleteFolder(folder.id)}
               />
@@ -281,8 +284,10 @@ export const Dashboard = ({ user, onSignOut, onFolderClick, onRandomStudy, onNav
       <CreateFolderDialog
         open={isCreateDialogOpen}
         onOpenChange={handleDialogClose}
-        onSuccess={fetchFolders}
+        onSuccess={fetchSubfolders}
         editFolder={editingFolder}
+        parentId={folderId}
+        parentName={folderName}
       />
     </div>
   );

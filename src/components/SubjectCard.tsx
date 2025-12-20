@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Folder, MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { Folder, FolderOpen, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,6 +15,7 @@ interface SubjectCardProps {
   name: string;
   description?: string;
   questionCount: number;
+  subfolderCount?: number;
   createdAt: string;
   colorVariant: 'orange' | 'blue' | 'green' | 'red' | 'purple' | 'teal' | 'pink' | 'indigo';
   onClick: () => void;
@@ -37,6 +38,7 @@ export const SubjectCard = ({
   name,
   description,
   questionCount,
+  subfolderCount = 0,
   createdAt,
   colorVariant,
   onClick,
@@ -48,6 +50,8 @@ export const SubjectCard = ({
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
+
+  const IconComponent = subfolderCount > 0 ? FolderOpen : Folder;
 
   return (
     <Card
@@ -65,7 +69,7 @@ export const SubjectCard = ({
         {/* Header with icon and menu */}
         <div className="flex items-start justify-between mb-4">
           <div className={`p-3 rounded-xl ${gradientClasses[colorVariant]} shadow-lg`}>
-            <Folder className="w-6 h-6 text-white" />
+            <IconComponent className="w-6 h-6 text-white" />
           </div>
           
           <DropdownMenu>
@@ -108,9 +112,16 @@ export const SubjectCard = ({
 
           {/* Stats */}
           <div className="flex items-center justify-between pt-2">
-            <Badge variant="secondary" className="font-medium">
-              {questionCount} {questionCount === 1 ? 'questão' : 'questões'}
-            </Badge>
+            <div className="flex gap-2 flex-wrap">
+              {subfolderCount > 0 && (
+                <Badge variant="outline" className="font-medium">
+                  {subfolderCount} {subfolderCount === 1 ? 'tema' : 'temas'}
+                </Badge>
+              )}
+              <Badge variant="secondary" className="font-medium">
+                {questionCount} {questionCount === 1 ? 'questão' : 'questões'}
+              </Badge>
+            </div>
             
             <span className="text-xs text-muted-foreground">
               {formatDate(createdAt)}

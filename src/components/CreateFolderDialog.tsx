@@ -34,15 +34,28 @@ interface CreateFolderDialogProps {
     name: string;
     description: string | null;
   } | null;
+  parentId?: string;
+  parentName?: string;
 }
 
-export const CreateFolderDialog = ({ open, onOpenChange, onSuccess, editFolder }: CreateFolderDialogProps) => {
+export const CreateFolderDialog = ({ 
+  open, 
+  onOpenChange, 
+  onSuccess, 
+  editFolder,
+  parentId,
+  parentName,
+}: CreateFolderDialogProps) => {
   const [formData, setFormData] = useState({
     name: editFolder?.name || '',
     description: editFolder?.description || '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  const isSubfolder = !!parentId;
+  const itemLabel = isSubfolder ? 'Tema' : 'Matéria';
+  const itemLabelLower = isSubfolder ? 'tema' : 'matéria';
 
   // Update form when editFolder changes
   useEffect(() => {
@@ -88,8 +101,8 @@ export const CreateFolderDialog = ({ open, onOpenChange, onSuccess, editFolder }
         if (error) throw error;
 
         toast({
-          title: 'Matéria atualizada!',
-          description: 'Sua matéria foi atualizada com sucesso.',
+          title: `${itemLabel} atualizado!`,
+          description: `Seu ${itemLabelLower} foi atualizado com sucesso.`,
         });
       } else {
         // Create new folder
@@ -102,13 +115,14 @@ export const CreateFolderDialog = ({ open, onOpenChange, onSuccess, editFolder }
           name: validation.data.name,
           description: validation.data.description || null,
           user_id: userData.user.id,
+          parent_id: parentId || null,
         });
 
         if (error) throw error;
 
         toast({
-          title: 'Matéria criada!',
-          description: 'Sua nova matéria foi criada com sucesso.',
+          title: `${itemLabel} criado!`,
+          description: `Seu novo ${itemLabelLower} foi criado com sucesso.`,
         });
       }
 
@@ -117,7 +131,7 @@ export const CreateFolderDialog = ({ open, onOpenChange, onSuccess, editFolder }
       onSuccess();
     } catch (error: any) {
       toast({
-        title: 'Erro ao criar matéria',
+        title: `Erro ao criar ${itemLabelLower}`,
         description: error.message,
         variant: 'destructive',
       });
@@ -126,23 +140,39 @@ export const CreateFolderDialog = ({ open, onOpenChange, onSuccess, editFolder }
     }
   };
 
+  const getDialogTitle = () => {
+    if (editFolder) {
+      return `Editar ${itemLabel}`;
+    }
+    return isSubfolder ? `Novo Tema em "${parentName}"` : 'Nova Matéria';
+  };
+
+  const getDialogDescription = () => {
+    if (editFolder) {
+      return `Edite as informações do seu ${itemLabelLower}.`;
+    }
+    return isSubfolder 
+      ? 'Crie um novo tema para organizar suas questões dentro desta matéria.'
+      : 'Crie uma nova matéria para organizar suas questões de estudo.';
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{editFolder ? 'Editar Matéria' : 'Nova Matéria'}</DialogTitle>
+          <DialogTitle>{getDialogTitle()}</DialogTitle>
           <DialogDescription>
-            {editFolder ? 'Edite as informações da sua matéria.' : 'Crie uma nova matéria para organizar suas questões de estudo.'}
+            {getDialogDescription()}
           </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nome da matéria *</Label>
+              <Label htmlFor="name">Nome do {itemLabelLower} *</Label>
               <Input
                 id="name"
-                placeholder="Ex: Direito Constitucional"
+                placeholder={isSubfolder ? 'Ex: Álgebra Linear' : 'Ex: Direito Constitucional'}
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
@@ -154,7 +184,7 @@ export const CreateFolderDialog = ({ open, onOpenChange, onSuccess, editFolder }
               <Label htmlFor="description">Descrição (opcional)</Label>
               <Textarea
                 id="description"
-                placeholder="Adicione uma descrição para esta matéria..."
+                placeholder={`Adicione uma descrição para este ${itemLabelLower}...`}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 maxLength={500}
@@ -173,7 +203,9 @@ export const CreateFolderDialog = ({ open, onOpenChange, onSuccess, editFolder }
               Cancelar
             </Button>
             <Button type="submit" disabled={isLoading} variant="gradient">
-              {isLoading ? (editFolder ? 'Salvando...' : 'Criando...') : (editFolder ? 'Salvar' : 'Criar matéria')}
+              {isLoading 
+                ? (editFolder ? 'Salvando...' : 'Criando...') 
+                : (editFolder ? 'Salvar' : `Criar ${itemLabelLower}`)}
             </Button>
           </DialogFooter>
         </form>

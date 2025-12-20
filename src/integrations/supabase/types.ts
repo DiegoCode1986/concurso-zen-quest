@@ -47,6 +47,7 @@ export type Database = {
           description: string | null
           id: string
           name: string
+          parent_id: string | null
           user_id: string
         }
         Insert: {
@@ -54,6 +55,7 @@ export type Database = {
           description?: string | null
           id?: string
           name: string
+          parent_id?: string | null
           user_id: string
         }
         Update: {
@@ -61,9 +63,18 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+          parent_id?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       questions: {
         Row: {
