@@ -7,12 +7,22 @@ import { RandomStudyPage } from '@/pages/RandomStudyPage';
 import { FlashcardsPage } from '@/pages/FlashcardsPage';
 import { TimeclockPage } from '@/pages/TimeclockPage';
 import { FolderPage } from '@/pages/FolderPage';
+import { SimuladoConfigPage } from '@/pages/SimuladoConfigPage';
+import { SimuladoPage, type SimuladoResult } from '@/pages/SimuladoPage';
+import { SimuladoResultPage } from '@/pages/SimuladoResultPage';
 import { Sidebar } from '@/components/Sidebar';
 import type { User, Session } from '@supabase/supabase-js';
 
 import { StatisticsPage } from '@/pages/StatisticsPage';
 
-type ViewState = 'dashboard' | 'folder' | 'questions' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics';
+type ViewState = 'dashboard' | 'folder' | 'questions' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'simulado' | 'simulado-result';
+
+interface SelectedSubject {
+  folderId: string;
+  folderName: string;
+  questionCount: number;
+  availableCount: number;
+}
 
 interface AppState {
   view: ViewState;
@@ -21,6 +31,9 @@ interface AppState {
   // For breadcrumb navigation
   parentFolderId?: string;
   parentFolderName?: string;
+  // For simulado
+  simuladoSubjects?: SelectedSubject[];
+  simuladoResult?: SimuladoResult;
 }
 
 const Index = () => {
@@ -114,8 +127,20 @@ const Index = () => {
     }
   };
 
-  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics') => {
+  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config') => {
     setAppState({ view });
+  };
+
+  const handleStartSimulado = (subjects: SelectedSubject[]) => {
+    setAppState({ view: 'simulado', simuladoSubjects: subjects });
+  };
+
+  const handleFinishSimulado = (result: SimuladoResult) => {
+    setAppState({ view: 'simulado-result', simuladoResult: result });
+  };
+
+  const handleNewSimulado = () => {
+    setAppState({ view: 'simulado-config' });
   };
 
   if (loading) {
@@ -136,6 +161,9 @@ const Index = () => {
   const getSidebarView = () => {
     if (appState.view === 'questions' || appState.view === 'folder') {
       return 'dashboard';
+    }
+    if (appState.view === 'simulado' || appState.view === 'simulado-result') {
+      return 'simulado-config';
     }
     return appState.view;
   };
@@ -171,6 +199,23 @@ const Index = () => {
           <TimeclockPage onBack={handleBackToDashboard} />
         ) : appState.view === 'statistics' ? (
           <StatisticsPage onBack={handleBackToDashboard} />
+        ) : appState.view === 'simulado-config' ? (
+          <SimuladoConfigPage
+            onBack={handleBackToDashboard}
+            onStartSimulado={handleStartSimulado}
+          />
+        ) : appState.view === 'simulado' && appState.simuladoSubjects ? (
+          <SimuladoPage
+            subjects={appState.simuladoSubjects}
+            onFinish={handleFinishSimulado}
+            onCancel={handleNewSimulado}
+          />
+        ) : appState.view === 'simulado-result' && appState.simuladoResult ? (
+          <SimuladoResultPage
+            result={appState.simuladoResult}
+            onNewSimulado={handleNewSimulado}
+            onBack={handleBackToDashboard}
+          />
         ) : (
           <Dashboard
             user={user}
