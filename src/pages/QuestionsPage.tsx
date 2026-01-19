@@ -347,7 +347,7 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-lg leading-relaxed mb-2">
+                      <CardTitle className="text-lg leading-relaxed mb-2 whitespace-pre-wrap">
                         {question.title}
                       </CardTitle>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -427,7 +427,7 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
                                 <span className="font-medium text-sm">
                                   {String.fromCharCode(65 + index)})
                                 </span>
-                                <span className={`text-sm ${isEliminated ? 'line-through' : ''}`}>{option}</span>
+                                <span className={`text-sm whitespace-pre-wrap ${isEliminated ? 'line-through' : ''}`}>{option}</span>
                               </div>
                             </button>
                             {!isAnswered && (
@@ -530,7 +530,7 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
                   {question.explanation && showResults[question.id] && (
                     <div className="mt-4 p-4 bg-muted/50 rounded-lg">
                       <h4 className="text-sm font-medium text-foreground mb-2">Explicação:</h4>
-                      <p className="text-sm text-muted-foreground">{question.explanation}</p>
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{question.explanation}</p>
                     </div>
                   )}
                   

@@ -230,7 +230,7 @@ export const SimuladoPage = ({ subjects, onFinish, onCancel }: SimuladoPageProps
         <CardContent className="pt-6 space-y-6">
           <Badge variant="secondary">{currentQuestion.folderName}</Badge>
           
-          <p className="text-lg font-medium leading-relaxed">
+          <p className="text-lg font-medium leading-relaxed whitespace-pre-wrap">
             {currentQuestion.title}
           </p>
 
@@ -253,7 +253,7 @@ export const SimuladoPage = ({ subjects, onFinish, onCancel }: SimuladoPageProps
                     )}
                   >
                     <span className="font-medium mr-2">{letter})</span>
-                    {option}
+                    <span className="whitespace-pre-wrap">{option}</span>
                   </button>
                 );
               })
