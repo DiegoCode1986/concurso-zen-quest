@@ -230,7 +230,7 @@ export const SimuladoResultPage = ({ result, onNewSimulado, onBack }: SimuladoRe
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <div className="px-4 py-3 border border-t-0 rounded-b-lg bg-background space-y-3">
-                    <p className="text-foreground">{question.title}</p>
+                    <p className="text-foreground whitespace-pre-wrap">{question.title}</p>
 
                     {question.type === 'multiple_choice' && question.options && (
                       <div className="space-y-2">
@@ -300,7 +300,7 @@ export const SimuladoResultPage = ({ result, onNewSimulado, onBack }: SimuladoRe
                     {question.explanation && (
                       <div className="p-3 rounded-lg bg-muted">
                         <p className="text-sm font-medium mb-1">Explicação:</p>
-                        <p className="text-sm text-muted-foreground">{question.explanation}</p>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{question.explanation}</p>
                       </div>
                     )}
                   </div>

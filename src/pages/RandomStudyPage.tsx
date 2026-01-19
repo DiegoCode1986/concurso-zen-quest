@@ -198,7 +198,7 @@ export const RandomStudyPage = ({ onBack }: RandomStudyPageProps) => {
           <Badge variant="outline">{currentQuestion.type === 'true_false' ? 'V/F' : 'Múltipla Escolha'}</Badge>
         </div>
 
-        <h2 className="text-xl font-semibold mb-6">{currentQuestion.title}</h2>
+        <h2 className="text-xl font-semibold mb-6 whitespace-pre-wrap">{currentQuestion.title}</h2>
 
         {/* Options */}
         <div className="space-y-3 mb-6">
@@ -271,7 +271,7 @@ export const RandomStudyPage = ({ onBack }: RandomStudyPageProps) => {
                 disabled={showAnswer}
               >
                 <span className="font-semibold mr-3">{String.fromCharCode(65 + idx)}.</span>
-                {option}
+                <span className="whitespace-pre-wrap">{option}</span>
                 {showAnswer && (
                   isOptionCorrect(option) ? (
                     <CheckCircle2 className="w-5 h-5 ml-auto text-green-600" />
@@ -309,7 +309,7 @@ export const RandomStudyPage = ({ onBack }: RandomStudyPageProps) => {
                 {currentQuestion.explanation && (
                   <div className={`mt-3 ${isCorrect() ? 'text-green-800' : 'text-red-800'}`}>
                     <p className="font-medium mb-1">Explicação:</p>
-                    <p className="text-sm bg-white/50 px-3 py-2 rounded">{currentQuestion.explanation}</p>
+                    <p className="text-sm bg-white/50 px-3 py-2 rounded whitespace-pre-wrap">{currentQuestion.explanation}</p>
                   </div>
                 )}
               </div>
