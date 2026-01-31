@@ -9,13 +9,14 @@ import { FolderPage } from '@/pages/FolderPage';
 import { SimuladoConfigPage } from '@/pages/SimuladoConfigPage';
 import { SimuladoPage, type SimuladoResult } from '@/pages/SimuladoPage';
 import { SimuladoResultPage } from '@/pages/SimuladoResultPage';
+import { StudyPlanPage } from '@/pages/StudyPlanPage';
 import { Sidebar } from '@/components/Sidebar';
 import { MobileNav } from '@/components/MobileNav';
 import type { User, Session } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
 import { StatisticsPage } from '@/pages/StatisticsPage';
 
-type ViewState = 'dashboard' | 'folder' | 'questions' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'simulado' | 'simulado-result';
+type ViewState = 'dashboard' | 'folder' | 'questions' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'simulado' | 'simulado-result' | 'study-plan';
 
 interface SelectedSubject {
   folderId: string;
@@ -124,7 +125,7 @@ const StudentArea = () => {
     }
   };
 
-  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config') => {
+  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan') => {
     setAppState({ view });
   };
 
@@ -161,6 +162,9 @@ const StudentArea = () => {
     }
     if (appState.view === 'simulado' || appState.view === 'simulado-result') {
       return 'simulado-config';
+    }
+    if (appState.view === 'study-plan') {
+      return 'study-plan';
     }
     return appState.view;
   };
@@ -205,6 +209,8 @@ const StudentArea = () => {
           <FlashcardsPage onBack={handleBackToDashboard} />
         ) : appState.view === 'timeclock' ? (
           <TimeclockPage onBack={handleBackToDashboard} />
+        ) : appState.view === 'study-plan' ? (
+          <StudyPlanPage onBack={handleBackToDashboard} />
         ) : appState.view === 'statistics' ? (
           <StatisticsPage onBack={handleBackToDashboard} />
         ) : appState.view === 'simulado-config' ? (

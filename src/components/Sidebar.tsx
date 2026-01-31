@@ -1,9 +1,9 @@
-import { Folder, Clock, BookOpen, Shuffle, BarChart3, ClipboardList } from 'lucide-react';
+import { Folder, Clock, BookOpen, Shuffle, BarChart3, ClipboardList, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SidebarProps {
-  currentView: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config';
-  onNavigate: (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config') => void;
+  currentView: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan';
+  onNavigate: (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan') => void;
 }
 
 export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
@@ -12,6 +12,11 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
       id: 'dashboard' as const,
       label: 'Minhas Matérias',
       icon: Folder,
+    },
+    {
+      id: 'study-plan' as const,
+      label: 'Plano de Estudos',
+      icon: Target,
     },
     {
       id: 'random-study' as const,

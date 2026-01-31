@@ -29,8 +29,8 @@ interface DashboardProps {
   onSignOut: () => void;
   onFolderClick: (folderId: string, folderName: string) => void;
   onRandomStudy?: () => void;
-  onNavigate?: (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config') => void;
-  currentView?: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config';
+  onNavigate?: (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan') => void;
+  currentView?: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan';
 }
 
 const colorVariants = ['orange', 'blue', 'green', 'red', 'purple', 'teal', 'pink', 'indigo'] as const;
