@@ -1,12 +1,12 @@
-import { Folder, Shuffle, BookOpen, Menu, Clock, BarChart3, ClipboardList } from 'lucide-react';
+import { Folder, Shuffle, BookOpen, Menu, Clock, BarChart3, ClipboardList, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
 interface MobileNavProps {
-  currentView: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config';
-  onNavigate: (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config') => void;
+  currentView: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan';
+  onNavigate: (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan') => void;
 }
 
 export const MobileNav = ({ currentView, onNavigate }: MobileNavProps) => {
@@ -17,6 +17,11 @@ export const MobileNav = ({ currentView, onNavigate }: MobileNavProps) => {
       id: 'dashboard' as const,
       label: 'Minhas Matérias',
       icon: Folder,
+    },
+    {
+      id: 'study-plan' as const,
+      label: 'Plano de Estudos',
+      icon: Target,
     },
     {
       id: 'random-study' as const,
@@ -45,7 +50,7 @@ export const MobileNav = ({ currentView, onNavigate }: MobileNavProps) => {
     },
   ];
 
-  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config') => {
+  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan') => {
     onNavigate(view);
     setIsOpen(false);
   };

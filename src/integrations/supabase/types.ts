@@ -126,6 +126,53 @@ export type Database = {
           },
         ]
       }
+      study_progress: {
+        Row: {
+          created_at: string
+          folder_id: string
+          id: string
+          last_studied_at: string | null
+          notes: string | null
+          priority: Database["public"]["Enums"]["study_priority"]
+          status: Database["public"]["Enums"]["study_status"]
+          study_sessions: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          folder_id: string
+          id?: string
+          last_studied_at?: string | null
+          notes?: string | null
+          priority?: Database["public"]["Enums"]["study_priority"]
+          status?: Database["public"]["Enums"]["study_status"]
+          study_sessions?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          folder_id?: string
+          id?: string
+          last_studied_at?: string | null
+          notes?: string | null
+          priority?: Database["public"]["Enums"]["study_priority"]
+          status?: Database["public"]["Enums"]["study_status"]
+          study_sessions?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_progress_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       timeclock: {
         Row: {
           clock_in: string
@@ -164,7 +211,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      study_priority: "low" | "medium" | "high"
+      study_status: "not_started" | "in_progress" | "completed" | "review"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -291,6 +339,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      study_priority: ["low", "medium", "high"],
+      study_status: ["not_started", "in_progress", "completed", "review"],
+    },
   },
 } as const
