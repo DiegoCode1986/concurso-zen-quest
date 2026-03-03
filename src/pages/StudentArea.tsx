@@ -10,13 +10,14 @@ import { SimuladoConfigPage } from '@/pages/SimuladoConfigPage';
 import { SimuladoPage, type SimuladoResult } from '@/pages/SimuladoPage';
 import { SimuladoResultPage } from '@/pages/SimuladoResultPage';
 import { StudyPlanPage } from '@/pages/StudyPlanPage';
+import { CadernoErrosPage } from '@/pages/CadernoErrosPage';
 import { Sidebar } from '@/components/Sidebar';
 import { MobileNav } from '@/components/MobileNav';
 import type { User, Session } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
 import { StatisticsPage } from '@/pages/StatisticsPage';
 
-type ViewState = 'dashboard' | 'folder' | 'questions' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'simulado' | 'simulado-result' | 'study-plan';
+type ViewState = 'dashboard' | 'folder' | 'questions' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'simulado' | 'simulado-result' | 'study-plan' | 'caderno-erros';
 
 interface SelectedSubject {
   folderId: string;
@@ -125,7 +126,7 @@ const StudentArea = () => {
     }
   };
 
-  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan') => {
+  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan' | 'caderno-erros') => {
     setAppState({ view });
   };
 
@@ -133,8 +134,36 @@ const StudentArea = () => {
     setAppState({ view: 'simulado', simuladoSubjects: subjects });
   };
 
-  const handleFinishSimulado = (result: SimuladoResult) => {
+  const handleFinishSimulado = async (result: SimuladoResult) => {
     setAppState({ view: 'simulado-result', simuladoResult: result });
+
+    // Save wrong answers to caderno de erros
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const wrongQuestions = result.questions.filter(q => {
+        const userAnswer = result.answers[q.id];
+        if (userAnswer === undefined) return true; // unanswered = wrong
+        if (q.type === 'multiple_choice') return userAnswer !== q.correct_answer;
+        if (q.type === 'true_false') return userAnswer !== q.correct_boolean;
+        return false;
+      });
+
+      if (wrongQuestions.length > 0) {
+        const inserts = wrongQuestions.map(q => ({
+          user_id: user.id,
+          question_id: q.id,
+          folder_name: q.folderName,
+        }));
+
+        await supabase
+          .from('wrong_answers')
+          .upsert(inserts, { onConflict: 'user_id,question_id' });
+      }
+    } catch (error) {
+      console.error('Error saving wrong answers:', error);
+    }
   };
 
   const handleNewSimulado = () => {
@@ -165,6 +194,9 @@ const StudentArea = () => {
     }
     if (appState.view === 'study-plan') {
       return 'study-plan';
+    }
+    if (appState.view === 'caderno-erros') {
+      return 'caderno-erros';
     }
     return appState.view;
   };
@@ -209,6 +241,8 @@ const StudentArea = () => {
           <FlashcardsPage onBack={handleBackToDashboard} />
         ) : appState.view === 'timeclock' ? (
           <TimeclockPage onBack={handleBackToDashboard} />
+        ) : appState.view === 'caderno-erros' ? (
+          <CadernoErrosPage onBack={handleBackToDashboard} />
         ) : appState.view === 'study-plan' ? (
           <StudyPlanPage onBack={handleBackToDashboard} />
         ) : appState.view === 'statistics' ? (

@@ -1,12 +1,12 @@
-import { Folder, Shuffle, BookOpen, Menu, Clock, BarChart3, ClipboardList, Target } from 'lucide-react';
+import { Folder, Shuffle, BookOpen, Menu, Clock, BarChart3, ClipboardList, Target, BookX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
 interface MobileNavProps {
-  currentView: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan';
-  onNavigate: (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan') => void;
+  currentView: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan' | 'caderno-erros';
+  onNavigate: (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan' | 'caderno-erros') => void;
 }
 
 export const MobileNav = ({ currentView, onNavigate }: MobileNavProps) => {
@@ -39,6 +39,11 @@ export const MobileNav = ({ currentView, onNavigate }: MobileNavProps) => {
       icon: ClipboardList,
     },
     {
+      id: 'caderno-erros' as const,
+      label: 'Caderno de Erros',
+      icon: BookX,
+    },
+    {
       id: 'timeclock' as const,
       label: 'Bater Ponto',
       icon: Clock,
@@ -50,7 +55,7 @@ export const MobileNav = ({ currentView, onNavigate }: MobileNavProps) => {
     },
   ];
 
-  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan') => {
+  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan' | 'caderno-erros') => {
     onNavigate(view);
     setIsOpen(false);
   };
