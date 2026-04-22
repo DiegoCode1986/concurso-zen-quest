@@ -169,12 +169,36 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
     });
   };
 
-  const handleConfirmAnswer = (questionId: string) => {
+  const handleConfirmAnswer = async (questionId: string) => {
     const selectedAnswer = selectedAnswers[questionId];
     if (selectedAnswer === undefined) return;
 
     setAnsweredQuestions(prev => ({ ...prev, [questionId]: selectedAnswer }));
     setShowResults(prev => ({ ...prev, [questionId]: true }));
+
+    // Record attempt for folder stats
+    const question = questions.find(q => q.id === questionId);
+    if (!question) return;
+    let isCorrect = false;
+    if (question.type === 'multiple_choice') {
+      isCorrect = selectedAnswer === question.correct_answer;
+    } else if (question.type === 'true_false') {
+      isCorrect = selectedAnswer === question.correct_boolean;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      await supabase.from('folder_attempts').insert({
+        user_id: user.id,
+        folder_id: folderId,
+        question_id: questionId,
+        is_correct: isCorrect,
+      });
+      setStatsRefresh(prev => prev + 1);
+    } catch (error) {
+      console.error('Error recording attempt:', error);
+    }
   };
 
   const handleTryAgain = (questionId: string) => {
