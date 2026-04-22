@@ -305,6 +305,11 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
         <div className="mb-4 sm:mb-6">
           <StudyTimer folderName={folderName} />
         </div>
+
+        {/* Folder Stats */}
+        <div className="mb-4 sm:mb-6">
+          <FolderStatsCard folderId={folderId} refreshKey={statsRefresh} />
+        </div>
         
         {/* Top Actions */}
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
