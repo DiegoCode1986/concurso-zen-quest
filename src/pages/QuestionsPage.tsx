@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { CreateQuestionDialog } from '@/components/CreateQuestionDialog';
 import { StudyTimer } from '@/components/StudyTimer';
+import { FolderStatsCard } from '@/components/FolderStatsCard';
 import { exportQuestionsToPDF } from '@/utils/pdfExport';
 
 interface Question {
