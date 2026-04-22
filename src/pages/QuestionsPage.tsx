@@ -62,6 +62,7 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
   const [showResults, setShowResults] = useState<Record<string, boolean>>({});
   const [eliminatedOptions, setEliminatedOptions] = useState<Record<string, Set<string | boolean>>>({});
   const [currentPage, setCurrentPage] = useState(1);
+  const [statsRefresh, setStatsRefresh] = useState(0);
   const questionsPerPage = 5;
   const { toast } = useToast();
 
