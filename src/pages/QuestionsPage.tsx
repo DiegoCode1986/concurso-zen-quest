@@ -26,6 +26,7 @@ interface Question {
   correct_boolean: boolean | null;
   explanation: string | null;
   created_at: string;
+  code: string | null;
 }
 
 interface QuestionsPageProps {
