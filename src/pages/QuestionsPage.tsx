@@ -64,7 +64,7 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
         .from('questions')
         .select('*')
         .eq('folder_id', folderId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: true });
 
       if (error) throw error;
       setQuestions(data || []);
