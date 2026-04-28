@@ -26,6 +26,7 @@ interface Question {
   correct_boolean: boolean | null;
   explanation: string | null;
   created_at: string;
+  code: string | null;
 }
 
 interface QuestionsPageProps {
@@ -63,7 +64,7 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
         .from('questions')
         .select('*')
         .eq('folder_id', folderId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: true });
 
       if (error) throw error;
       setQuestions(data || []);
@@ -123,6 +124,7 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
   const filteredQuestions = questions.filter(question => {
     const term = searchTerm.toLowerCase().trim();
     if (!term) return true;
+    if (question.code?.toLowerCase().includes(term)) return true;
     if (question.title.toLowerCase().includes(term)) return true;
     if (question.explanation?.toLowerCase().includes(term)) return true;
     if (question.options?.some(opt => opt.toLowerCase().includes(term))) return true;
@@ -316,7 +318,7 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
-              placeholder="Buscar questões..."
+              placeholder="Buscar por código (Q0001), enunciado, opções..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 h-12 bg-white/80 backdrop-blur-sm border-border/50 focus:bg-white transition-all duration-300"
@@ -393,26 +395,33 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
                       </div>
                     </div>
                     
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-40">
-                        <DropdownMenuItem onClick={() => handleEditQuestion(question)}>
-                          <Pencil className="w-4 h-4 mr-2" />
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleDeleteQuestion(question.id)}
-                          className="text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Excluir
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {question.code && (
+                        <Badge variant="outline" className="font-mono text-xs font-bold border-primary/40 text-primary bg-primary/5">
+                          {question.code}
+                        </Badge>
+                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-40">
+                          <DropdownMenuItem onClick={() => handleEditQuestion(question)}>
+                            <Pencil className="w-4 h-4 mr-2" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteQuestion(question.id)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                 </CardHeader>
                 

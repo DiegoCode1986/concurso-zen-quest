@@ -103,8 +103,24 @@ export type Database = {
           },
         ]
       }
+      question_code_counters: {
+        Row: {
+          next_value: number
+          user_id: string
+        }
+        Insert: {
+          next_value?: number
+          user_id: string
+        }
+        Update: {
+          next_value?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       questions: {
         Row: {
+          code: string | null
           correct_answer: string | null
           correct_boolean: boolean | null
           created_at: string | null
@@ -118,6 +134,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          code?: string | null
           correct_answer?: string | null
           correct_boolean?: boolean | null
           created_at?: string | null
@@ -131,6 +148,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          code?: string | null
           correct_answer?: string | null
           correct_boolean?: boolean | null
           created_at?: string | null
