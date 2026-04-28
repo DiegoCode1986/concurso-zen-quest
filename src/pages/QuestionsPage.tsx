@@ -124,6 +124,7 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
   const filteredQuestions = questions.filter(question => {
     const term = searchTerm.toLowerCase().trim();
     if (!term) return true;
+    if (question.code?.toLowerCase().includes(term)) return true;
     if (question.title.toLowerCase().includes(term)) return true;
     if (question.explanation?.toLowerCase().includes(term)) return true;
     if (question.options?.some(opt => opt.toLowerCase().includes(term))) return true;
