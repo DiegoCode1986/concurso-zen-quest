@@ -395,26 +395,33 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
                       </div>
                     </div>
                     
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-40">
-                        <DropdownMenuItem onClick={() => handleEditQuestion(question)}>
-                          <Pencil className="w-4 h-4 mr-2" />
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleDeleteQuestion(question.id)}
-                          className="text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Excluir
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {question.code && (
+                        <Badge variant="outline" className="font-mono text-xs font-bold border-primary/40 text-primary bg-primary/5">
+                          {question.code}
+                        </Badge>
+                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-40">
+                          <DropdownMenuItem onClick={() => handleEditQuestion(question)}>
+                            <Pencil className="w-4 h-4 mr-2" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteQuestion(question.id)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                 </CardHeader>
                 
