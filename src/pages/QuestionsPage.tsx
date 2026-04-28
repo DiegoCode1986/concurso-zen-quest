@@ -120,14 +120,23 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
     }
   };
 
-  const filteredQuestions = questions.filter(question =>
-    question.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredQuestions = questions.filter(question => {
+    const term = searchTerm.toLowerCase().trim();
+    if (!term) return true;
+    if (question.title.toLowerCase().includes(term)) return true;
+    if (question.explanation?.toLowerCase().includes(term)) return true;
+    if (question.options?.some(opt => opt.toLowerCase().includes(term))) return true;
+    return false;
+  });
 
-  const totalPages = Math.ceil(filteredQuestions.length / questionsPerPage);
-  const startIndex = (currentPage - 1) * questionsPerPage;
-  const endIndex = startIndex + questionsPerPage;
-  const currentQuestions = filteredQuestions.slice(startIndex, endIndex);
+  const totalQuestions = filteredQuestions.length;
+  const safePage = Math.min(currentPage, Math.max(totalQuestions, 1));
+  const currentQuestions = totalQuestions > 0 ? [filteredQuestions[safePage - 1]] : [];
+
+  // Reset para a primeira questão quando o termo de busca muda
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const handleSelectAnswer = (questionId: string, answer: string | boolean) => {
     setSelectedAnswers(prev => ({ ...prev, [questionId]: answer }));
