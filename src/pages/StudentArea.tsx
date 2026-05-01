@@ -49,6 +49,26 @@ const StudentArea = () => {
     view: 'dashboard',
   });
   const navigate = useNavigate();
+  const { todayCount, overdueCount } = useRevisionsDue(user ? 1 : 0);
+  const [alertShown, setAlertShown] = useState(false);
+
+  useEffect(() => {
+    if (!user || alertShown) return;
+    if (overdueCount > 0 || todayCount > 0) {
+      const parts: string[] = [];
+      if (overdueCount > 0) parts.push(`${overdueCount} atrasada(s)`);
+      if (todayCount > 0) parts.push(`${todayCount} para hoje`);
+      toast.warning('Você tem revisões pendentes', {
+        description: parts.join(' e ') + '. Acesse "Revisões" no menu.',
+        duration: 8000,
+        action: {
+          label: 'Ver agora',
+          onClick: () => setAppState({ view: 'revisions' }),
+        },
+      });
+      setAlertShown(true);
+    }
+  }, [user, todayCount, overdueCount, alertShown]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
