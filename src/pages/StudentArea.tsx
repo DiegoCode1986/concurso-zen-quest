@@ -16,8 +16,13 @@ import { MobileNav } from '@/components/MobileNav';
 import type { User, Session } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
 import { StatisticsPage } from '@/pages/StatisticsPage';
+import { RevisionsPage } from '@/pages/RevisionsPage';
+import { useRevisionsDue } from '@/hooks/useRevisionsDue';
+import { toast } from 'sonner';
 
-type ViewState = 'dashboard' | 'folder' | 'questions' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'simulado' | 'simulado-result' | 'study-plan' | 'caderno-erros';
+type ViewState = 'dashboard' | 'folder' | 'questions' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'simulado' | 'simulado-result' | 'study-plan' | 'caderno-erros' | 'revisions';
+
+type NavView = 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan' | 'caderno-erros' | 'revisions';
 
 interface SelectedSubject {
   folderId: string;
@@ -44,6 +49,26 @@ const StudentArea = () => {
     view: 'dashboard',
   });
   const navigate = useNavigate();
+  const { todayCount, overdueCount } = useRevisionsDue(user ? 1 : 0);
+  const [alertShown, setAlertShown] = useState(false);
+
+  useEffect(() => {
+    if (!user || alertShown) return;
+    if (overdueCount > 0 || todayCount > 0) {
+      const parts: string[] = [];
+      if (overdueCount > 0) parts.push(`${overdueCount} atrasada(s)`);
+      if (todayCount > 0) parts.push(`${todayCount} para hoje`);
+      toast.warning('Você tem revisões pendentes', {
+        description: parts.join(' e ') + '. Acesse "Revisões" no menu.',
+        duration: 8000,
+        action: {
+          label: 'Ver agora',
+          onClick: () => setAppState({ view: 'revisions' }),
+        },
+      });
+      setAlertShown(true);
+    }
+  }, [user, todayCount, overdueCount, alertShown]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -126,7 +151,7 @@ const StudentArea = () => {
     }
   };
 
-  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan' | 'caderno-erros') => {
+  const handleNavigate = (view: NavView) => {
     setAppState({ view });
   };
 
@@ -185,7 +210,7 @@ const StudentArea = () => {
     return null;
   }
 
-  const getSidebarView = () => {
+  const getSidebarView = (): NavView => {
     if (appState.view === 'questions' || appState.view === 'folder') {
       return 'dashboard';
     }
@@ -198,7 +223,10 @@ const StudentArea = () => {
     if (appState.view === 'caderno-erros') {
       return 'caderno-erros';
     }
-    return appState.view;
+    if (appState.view === 'revisions') {
+      return 'revisions';
+    }
+    return appState.view as NavView;
   };
 
   return (
@@ -247,6 +275,8 @@ const StudentArea = () => {
           <StudyPlanPage onBack={handleBackToDashboard} />
         ) : appState.view === 'statistics' ? (
           <StatisticsPage onBack={handleBackToDashboard} />
+        ) : appState.view === 'revisions' ? (
+          <RevisionsPage onBack={handleBackToDashboard} />
         ) : appState.view === 'simulado-config' ? (
           <SimuladoConfigPage
             onBack={handleBackToDashboard}
