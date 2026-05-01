@@ -24,13 +24,15 @@ interface Folder {
   subfolder_count: number;
 }
 
+type NavView = 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan' | 'caderno-erros' | 'revisions';
+
 interface DashboardProps {
   user: any;
   onSignOut: () => void;
   onFolderClick: (folderId: string, folderName: string) => void;
   onRandomStudy?: () => void;
-  onNavigate?: (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan' | 'caderno-erros') => void;
-  currentView?: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan' | 'caderno-erros';
+  onNavigate?: (view: NavView) => void;
+  currentView?: NavView;
 }
 
 const colorVariants = ['orange', 'blue', 'green', 'red', 'purple', 'teal', 'pink', 'indigo'] as const;
