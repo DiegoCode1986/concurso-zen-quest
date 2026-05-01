@@ -171,6 +171,63 @@ export type Database = {
           },
         ]
       }
+      revisions: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          review_1_date: string
+          review_1_done: boolean
+          review_2_date: string
+          review_2_done: boolean
+          review_3_date: string
+          review_3_done: boolean
+          review_4_date: string
+          review_4_done: boolean
+          study_date: string
+          subject: string
+          topic: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          review_1_date: string
+          review_1_done?: boolean
+          review_2_date: string
+          review_2_done?: boolean
+          review_3_date: string
+          review_3_done?: boolean
+          review_4_date: string
+          review_4_done?: boolean
+          study_date: string
+          subject: string
+          topic: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          review_1_date?: string
+          review_1_done?: boolean
+          review_2_date?: string
+          review_2_done?: boolean
+          review_3_date?: string
+          review_3_done?: boolean
+          review_4_date?: string
+          review_4_done?: boolean
+          study_date?: string
+          subject?: string
+          topic?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       study_progress: {
         Row: {
           created_at: string
