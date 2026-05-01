@@ -16,8 +16,13 @@ import { MobileNav } from '@/components/MobileNav';
 import type { User, Session } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
 import { StatisticsPage } from '@/pages/StatisticsPage';
+import { RevisionsPage } from '@/pages/RevisionsPage';
+import { useRevisionsDue } from '@/hooks/useRevisionsDue';
+import { toast } from 'sonner';
 
-type ViewState = 'dashboard' | 'folder' | 'questions' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'simulado' | 'simulado-result' | 'study-plan' | 'caderno-erros';
+type ViewState = 'dashboard' | 'folder' | 'questions' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'simulado' | 'simulado-result' | 'study-plan' | 'caderno-erros' | 'revisions';
+
+type NavView = 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan' | 'caderno-erros' | 'revisions';
 
 interface SelectedSubject {
   folderId: string;
