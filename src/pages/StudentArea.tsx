@@ -131,7 +131,7 @@ const StudentArea = () => {
     }
   };
 
-  const handleNavigate = (view: 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan' | 'caderno-erros') => {
+  const handleNavigate = (view: NavView) => {
     setAppState({ view });
   };
 
@@ -190,7 +190,7 @@ const StudentArea = () => {
     return null;
   }
 
-  const getSidebarView = () => {
+  const getSidebarView = (): NavView => {
     if (appState.view === 'questions' || appState.view === 'folder') {
       return 'dashboard';
     }
@@ -203,7 +203,10 @@ const StudentArea = () => {
     if (appState.view === 'caderno-erros') {
       return 'caderno-erros';
     }
-    return appState.view;
+    if (appState.view === 'revisions') {
+      return 'revisions';
+    }
+    return appState.view as NavView;
   };
 
   return (
