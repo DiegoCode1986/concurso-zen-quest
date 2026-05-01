@@ -255,6 +255,8 @@ const StudentArea = () => {
           <StudyPlanPage onBack={handleBackToDashboard} />
         ) : appState.view === 'statistics' ? (
           <StatisticsPage onBack={handleBackToDashboard} />
+        ) : appState.view === 'revisions' ? (
+          <RevisionsPage onBack={handleBackToDashboard} />
         ) : appState.view === 'simulado-config' ? (
           <SimuladoConfigPage
             onBack={handleBackToDashboard}
