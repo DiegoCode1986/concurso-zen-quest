@@ -674,6 +674,43 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
         onSuccess={fetchQuestions}
         editQuestion={editingQuestion}
       />
+
+      {/* Jump to question dialog */}
+      <Dialog open={jumpDialogOpen} onOpenChange={setJumpDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Acessar questão por número</DialogTitle>
+            <DialogDescription>
+              Deseja acessar qual questão do caderno? (número entre 1 e {questions.length})
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleJumpToQuestion();
+            }}
+          >
+            <Input
+              type="number"
+              min={1}
+              max={questions.length}
+              autoFocus
+              value={jumpNumber}
+              onChange={(e) => setJumpNumber(e.target.value)}
+              placeholder="Ex: 4"
+              className="h-11"
+            />
+            <DialogFooter className="mt-4 gap-2">
+              <Button type="button" variant="ghost" onClick={() => setJumpDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" variant="default">
+                OK
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
