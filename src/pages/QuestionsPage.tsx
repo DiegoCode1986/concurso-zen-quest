@@ -357,26 +357,17 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
               className="pl-10 h-12 bg-white/80 backdrop-blur-sm border-border/50 focus:bg-white transition-all duration-300"
             />
           </div>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleJumpToQuestion();
-            }}
-            className="flex gap-2"
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            onClick={() => setJumpDialogOpen(true)}
+            disabled={questions.length === 0}
+            className="h-11 sm:h-12 px-4"
           >
-            <div className="relative">
-              <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Ir para Q..."
-                value={jumpCode}
-                onChange={(e) => setJumpCode(e.target.value)}
-                className="pl-9 h-12 w-36 sm:w-40 bg-white/80 backdrop-blur-sm border-border/50"
-              />
-            </div>
-            <Button type="submit" variant="outline" size="lg" className="h-11 sm:h-12 px-3 sm:px-4">
-              Ir
-            </Button>
-          </form>
+            <Hash className="w-4 h-4 mr-2" />
+            <span className="text-sm sm:text-base">Acessar questão</span>
+          </Button>
           <div className="flex gap-3">
             <Button 
               onClick={handleExportPDF}
