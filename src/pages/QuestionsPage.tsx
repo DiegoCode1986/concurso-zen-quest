@@ -5,6 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Search, Plus, MoreVertical, Pencil, Trash2, CheckCircle, XCircle, RotateCcw, FileDown, X, ChevronLeft, ChevronRight, Hash } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import {
   DropdownMenu,
@@ -56,7 +64,8 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
   const [eliminatedOptions, setEliminatedOptions] = useState<Record<string, Set<string | boolean>>>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [statsRefresh, setStatsRefresh] = useState(0);
-  const [jumpCode, setJumpCode] = useState('');
+  const [jumpDialogOpen, setJumpDialogOpen] = useState(false);
+  const [jumpNumber, setJumpNumber] = useState('');
   const { toast } = useToast();
 
   const fetchQuestions = async () => {
@@ -253,42 +262,26 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
   };
 
   const handleJumpToQuestion = () => {
-    const raw = jumpCode.trim();
+    const raw = jumpNumber.trim();
     if (!raw) return;
 
-    // Normaliza: aceita "1", "01", "Q0001", "q1", etc.
-    let normalized = raw.toUpperCase().replace(/\s+/g, '');
-    if (!normalized.startsWith('Q')) {
-      const num = normalized.replace(/\D/g, '');
-      if (!num) {
-        toast({ title: 'Código inválido', description: 'Digite um número ou código (ex: Q0001)', variant: 'destructive' });
-        return;
-      }
-      normalized = 'Q' + num.padStart(4, '0');
-    } else {
-      const num = normalized.slice(1).replace(/\D/g, '');
-      if (!num) {
-        toast({ title: 'Código inválido', description: 'Digite um número ou código (ex: Q0001)', variant: 'destructive' });
-        return;
-      }
-      normalized = 'Q' + num.padStart(4, '0');
-    }
+    const num = parseInt(raw.replace(/\D/g, ''), 10);
+    const total = questions.length;
 
-    // Limpa busca para garantir que a questão apareça na lista
-    setSearchTerm('');
-
-    // Procura na lista completa de questões da pasta
-    const idx = questions.findIndex(q => q.code?.toUpperCase() === normalized);
-    if (idx === -1) {
+    if (!num || isNaN(num) || num < 1 || num > total) {
       toast({
-        title: 'Questão não encontrada',
-        description: `Nenhuma questão com código ${normalized} nesta pasta.`,
+        title: 'Número inválido',
+        description: `Digite um número entre 1 e ${total}.`,
         variant: 'destructive',
       });
       return;
     }
-    setCurrentPage(idx + 1);
-    setJumpCode('');
+
+    // Limpa busca para garantir que a questão apareça na lista
+    setSearchTerm('');
+    setCurrentPage(num);
+    setJumpNumber('');
+    setJumpDialogOpen(false);
   };
 
   const formatDate = (dateString: string) => {
@@ -358,32 +351,23 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
-              placeholder="Buscar por código (Q0001), enunciado, opções..."
+              placeholder="Buscar por enunciado, opções, código..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 h-12 bg-white/80 backdrop-blur-sm border-border/50 focus:bg-white transition-all duration-300"
             />
           </div>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleJumpToQuestion();
-            }}
-            className="flex gap-2"
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            onClick={() => setJumpDialogOpen(true)}
+            disabled={questions.length === 0}
+            className="h-11 sm:h-12 px-4"
           >
-            <div className="relative">
-              <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Ir para Q..."
-                value={jumpCode}
-                onChange={(e) => setJumpCode(e.target.value)}
-                className="pl-9 h-12 w-36 sm:w-40 bg-white/80 backdrop-blur-sm border-border/50"
-              />
-            </div>
-            <Button type="submit" variant="outline" size="lg" className="h-11 sm:h-12 px-3 sm:px-4">
-              Ir
-            </Button>
-          </form>
+            <Hash className="w-4 h-4 mr-2" />
+            <span className="text-sm sm:text-base">Acessar questão</span>
+          </Button>
           <div className="flex gap-3">
             <Button 
               onClick={handleExportPDF}
@@ -690,6 +674,43 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
         onSuccess={fetchQuestions}
         editQuestion={editingQuestion}
       />
+
+      {/* Jump to question dialog */}
+      <Dialog open={jumpDialogOpen} onOpenChange={setJumpDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Acessar questão por número</DialogTitle>
+            <DialogDescription>
+              Deseja acessar qual questão do caderno? (número entre 1 e {questions.length})
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleJumpToQuestion();
+            }}
+          >
+            <Input
+              type="number"
+              min={1}
+              max={questions.length}
+              autoFocus
+              value={jumpNumber}
+              onChange={(e) => setJumpNumber(e.target.value)}
+              placeholder="Ex: 4"
+              className="h-11"
+            />
+            <DialogFooter className="mt-4 gap-2">
+              <Button type="button" variant="ghost" onClick={() => setJumpDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" variant="default">
+                OK
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
