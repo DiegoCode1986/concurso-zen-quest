@@ -252,6 +252,45 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
     }
   };
 
+  const handleJumpToQuestion = () => {
+    const raw = jumpCode.trim();
+    if (!raw) return;
+
+    // Normaliza: aceita "1", "01", "Q0001", "q1", etc.
+    let normalized = raw.toUpperCase().replace(/\s+/g, '');
+    if (!normalized.startsWith('Q')) {
+      const num = normalized.replace(/\D/g, '');
+      if (!num) {
+        toast({ title: 'Código inválido', description: 'Digite um número ou código (ex: Q0001)', variant: 'destructive' });
+        return;
+      }
+      normalized = 'Q' + num.padStart(4, '0');
+    } else {
+      const num = normalized.slice(1).replace(/\D/g, '');
+      if (!num) {
+        toast({ title: 'Código inválido', description: 'Digite um número ou código (ex: Q0001)', variant: 'destructive' });
+        return;
+      }
+      normalized = 'Q' + num.padStart(4, '0');
+    }
+
+    // Limpa busca para garantir que a questão apareça na lista
+    setSearchTerm('');
+
+    // Procura na lista completa de questões da pasta
+    const idx = questions.findIndex(q => q.code?.toUpperCase() === normalized);
+    if (idx === -1) {
+      toast({
+        title: 'Questão não encontrada',
+        description: `Nenhuma questão com código ${normalized} nesta pasta.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+    setCurrentPage(idx + 1);
+    setJumpCode('');
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
