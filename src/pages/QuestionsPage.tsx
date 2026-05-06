@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Search, Plus, MoreVertical, Pencil, Trash2, CheckCircle, XCircle, RotateCcw, FileDown, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Search, Plus, MoreVertical, Pencil, Trash2, CheckCircle, XCircle, RotateCcw, FileDown, X, ChevronLeft, ChevronRight, Hash } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   DropdownMenu,
@@ -56,6 +56,7 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
   const [eliminatedOptions, setEliminatedOptions] = useState<Record<string, Set<string | boolean>>>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [statsRefresh, setStatsRefresh] = useState(0);
+  const [jumpCode, setJumpCode] = useState('');
   const { toast } = useToast();
 
   const fetchQuestions = async () => {
@@ -251,6 +252,45 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
     }
   };
 
+  const handleJumpToQuestion = () => {
+    const raw = jumpCode.trim();
+    if (!raw) return;
+
+    // Normaliza: aceita "1", "01", "Q0001", "q1", etc.
+    let normalized = raw.toUpperCase().replace(/\s+/g, '');
+    if (!normalized.startsWith('Q')) {
+      const num = normalized.replace(/\D/g, '');
+      if (!num) {
+        toast({ title: 'Código inválido', description: 'Digite um número ou código (ex: Q0001)', variant: 'destructive' });
+        return;
+      }
+      normalized = 'Q' + num.padStart(4, '0');
+    } else {
+      const num = normalized.slice(1).replace(/\D/g, '');
+      if (!num) {
+        toast({ title: 'Código inválido', description: 'Digite um número ou código (ex: Q0001)', variant: 'destructive' });
+        return;
+      }
+      normalized = 'Q' + num.padStart(4, '0');
+    }
+
+    // Limpa busca para garantir que a questão apareça na lista
+    setSearchTerm('');
+
+    // Procura na lista completa de questões da pasta
+    const idx = questions.findIndex(q => q.code?.toUpperCase() === normalized);
+    if (idx === -1) {
+      toast({
+        title: 'Questão não encontrada',
+        description: `Nenhuma questão com código ${normalized} nesta pasta.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+    setCurrentPage(idx + 1);
+    setJumpCode('');
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
@@ -324,6 +364,26 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
               className="pl-10 h-12 bg-white/80 backdrop-blur-sm border-border/50 focus:bg-white transition-all duration-300"
             />
           </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleJumpToQuestion();
+            }}
+            className="flex gap-2"
+          >
+            <div className="relative">
+              <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Ir para Q..."
+                value={jumpCode}
+                onChange={(e) => setJumpCode(e.target.value)}
+                className="pl-9 h-12 w-36 sm:w-40 bg-white/80 backdrop-blur-sm border-border/50"
+              />
+            </div>
+            <Button type="submit" variant="outline" size="lg" className="h-11 sm:h-12 px-3 sm:px-4">
+              Ir
+            </Button>
+          </form>
           <div className="flex gap-3">
             <Button 
               onClick={handleExportPDF}
