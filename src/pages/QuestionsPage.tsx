@@ -351,7 +351,7 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
-              placeholder="Buscar por código (Q0001), enunciado, opções..."
+              placeholder="Buscar por enunciado, opções, código..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 h-12 bg-white/80 backdrop-blur-sm border-border/50 focus:bg-white transition-all duration-300"
