@@ -56,6 +56,7 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
   const [eliminatedOptions, setEliminatedOptions] = useState<Record<string, Set<string | boolean>>>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [statsRefresh, setStatsRefresh] = useState(0);
+  const [jumpCode, setJumpCode] = useState('');
   const { toast } = useToast();
 
   const fetchQuestions = async () => {
