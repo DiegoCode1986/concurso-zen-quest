@@ -1,6 +1,7 @@
 import { Folder, Clock, BookOpen, Shuffle, BarChart3, ClipboardList, Target, BookX, CalendarClock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRevisionsDue } from '@/hooks/useRevisionsDue';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 type ViewId = 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan' | 'caderno-erros' | 'revisions';
 
@@ -71,6 +72,10 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
           })}
         </div>
       </nav>
+
+      <div className="p-4 border-t border-sidebar-border">
+        <ThemeToggle variant="full" />
+      </div>
     </aside>
   );
 };
