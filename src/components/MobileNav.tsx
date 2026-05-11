@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useRevisionsDue } from '@/hooks/useRevisionsDue';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 type ViewId = 'dashboard' | 'random-study' | 'flashcards' | 'timeclock' | 'statistics' | 'simulado-config' | 'study-plan' | 'caderno-erros' | 'revisions';
 
@@ -92,6 +93,10 @@ export const MobileNav = ({ currentView, onNavigate }: MobileNavProps) => {
               })}
             </div>
           </nav>
+
+          <div className="p-4 border-t border-border">
+            <ThemeToggle variant="full" />
+          </div>
         </div>
       </SheetContent>
     </Sheet>
