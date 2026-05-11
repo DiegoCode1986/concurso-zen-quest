@@ -302,7 +302,7 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-accent/10">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50">
+      <header className="bg-background/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16">
             <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
@@ -354,7 +354,7 @@ export const QuestionsPage = ({ folderId, folderName, onBack, parentFolderName }
               placeholder="Buscar por enunciado, opções, código..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-12 bg-white/80 backdrop-blur-sm border-border/50 focus:bg-white transition-all duration-300"
+              className="pl-10 h-12 bg-background/80 backdrop-blur-sm border-border/50 focus:bg-background transition-all duration-300"
             />
           </div>
           <Button
